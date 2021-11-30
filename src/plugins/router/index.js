@@ -7,8 +7,50 @@ const routes = [
     name: 'Loterry',
     component: () => import(/* webpackChunkName: "LotteryWrapper" */ '../../views/LotteryPage.vue'),
     meta: {
-      label: 'Main',
-      icon: 'mdi-chart-bell-curve',
+      label: 'Dashboard',
+      icon: 'mdi-view-dashboard',
+      isMainMenuItem: true
+    },
+     props: (route) => ({
+        project: Object,
+        ...route.params
+    })
+  },
+  {
+    path: '/CreateProject',
+    name: 'CreateProject',
+    component: () => import(/* webpackChunkName: "CreateProject" */ '../../views/CreateProject.vue'),
+    meta: {
+      label: 'CreateProject',
+      isMainMenuItem: false
+    }
+  },
+   {
+    path: '/LotteryDetail',
+    name: 'LotteryDetail',
+    component: () => import(/* webpackChunkName: "CreateProject" */ '../../components/LotteryDetail.vue'),
+    meta: {
+      label: 'LotteryDetail',
+      isMainMenuItem: false
+    }
+  },
+     {
+    path: '/Archive',
+    name: 'LotteryArchive',
+    component: () => import(/* webpackChunkName: "Profile" */ '../../views/Archive.vue'),
+    meta: {
+      label: 'Archive',
+      icon: 'mdi-archive',
+      isMainMenuItem: true
+    }
+  },
+   {
+    path: '/AccountProfile',
+    name: 'AccountProfile',
+    component: () => import(/* webpackChunkName: "Profile" */ '../../views/Profile.vue'),
+    meta: {
+      label: 'Profile',
+      icon: 'mdi-account',
       isMainMenuItem: true
     }
   }

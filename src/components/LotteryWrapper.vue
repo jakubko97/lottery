@@ -1,103 +1,67 @@
 <template>
   <v-container>
-    <v-row class="text-center">
-      <v-col cols="12">
-        <v-img
-          :src="require('../assets/crowdfunding.png')"
-          class="my-3"
-          contain
-          height="200"
-        />
-      </v-col>
-      <v-col class="mb-4">
-        <h1 class="display-2 font-weight-bold mb-3"></h1>
-      </v-col>
-    </v-row>
+    <v-list subheader>
+      <v-row>
+        <v-col cols="12" md="10">
+          <v-subheader>Lotteries</v-subheader>
+        </v-col>
+        <v-col cols="12" md="2">
+          <v-fab-transition>
+            <v-btn fab color="primary" @click="createProject()">
+              <v-icon>mdi-plus-box</v-icon>
+            </v-btn>
+          </v-fab-transition>
+        </v-col>
+      </v-row>
+      <v-list-item
+        dense
+        v-for="lottery in projectData"
+        :key="lottery.projectTitle"
+        style="width: 450px; margin: 0 auto"
+      >
+        <v-list-item-content>
+          <v-card elevation="4" height="225">
+            <v-card-title class="justify-center"
+              >{{ lottery.projectTitle }}
+            </v-card-title>
+            <v-card-text>
+              <v-row class="text-center">
+                <v-col
+                  ><v-chip>{{ lottery.currentAmount }} ETH </v-chip>
+                </v-col>
+              </v-row>
 
-    <StartProjectDialog ref="startProjectDialog" @startProject="startProject" />
-
-    <v-data-table
-      :headers="headers"
-      :items="projectData"
-      :mobile-breakpoint="0"
-      :search="search"
-      :loading="!callResult.finished"
-      :sort-by="['']"
-      :sort-desc="[true]"
-      multi-sort
-      :footer-props="{
-        itemsPerPageOptions: [10, 20],
-      }"
-      dense
-      @click:row="lotteryDetail"
-    >
-      <template #top>
-        <v-container>
-          <v-row>
-            <v-col cols="12" md="4">
-              <h2>
-                {{ "Lotteries" }}
-              </h2>
-            </v-col>
-            <v-col cols="12" md="8">
-              <v-text-field
-                v-model="search"
-                append-icon="mdi-magnify"
-                label="search"
-                single-line
-                hide-details
-                class="ma-0 pa-0"
-              />
-            </v-col>
-          </v-row>
-        </v-container>
-      </template>
-      <template #progress>
-        <v-progress-linear
-          v-if="!callResult.finished"
-          color="info"
-          height="10"
-          indeterminate
-        />
-      </template>
-      <!-- <template v-for="header in headers">
-        <span :slot="`header.${header.value}`" :key="header.value">{{
-          $i18n.t(header.text)
-        }}</span>
-      </template> -->
-      <template #[`item.deadlineTime`]="{ item }">
-        <div v-if="item.deadlineTime != null" class="d-flex">
-          {{ getDateFormat(item.deadlineTime) }}
-        </div>
-      </template>
-      <template #[`item.lotteryDateCreated`]="{ item }">
-        <div v-if="item.lotteryDateCreated != null" class="d-flex">
-          {{ getDateFormat(item.lotteryDateCreated) }}
-        </div>
-      </template>
-    </v-data-table>
-    <LotteryDetail ref="lotteryDialog" />
+              <v-row class="text-center">
+                <v-col>{{ getDateFormat(lottery.deadlineTime) }} </v-col>
+              </v-row>
+            </v-card-text>
+            <v-card-actions class="justify-center">
+              <v-chip
+                @click="lotteryDetail(lottery)"
+                color="deep-purple lighten-2"
+                text-color="white"
+                >Get Tickets
+              </v-chip>
+            </v-card-actions>
+          </v-card>
+        </v-list-item-content>
+      </v-list-item>
+    </v-list>
   </v-container>
 </template>
 
 <script>
 import createLottery from "../../contracts/createLotteryInstance";
 import lottery from "../../contracts/lotteryInstance";
-import StartProjectDialog from "../components/StartProjectDialog";
-import LotteryDetail from "../components/LotteryDetail";
 
 export default {
   name: "HelloWorld",
-  components: {
-    StartProjectDialog,
-    LotteryDetail,
-  },
+
   data: () => ({
     headers: [
       { text: "Title", value: "projectTitle" },
       { text: "Price", value: "ticketPrice" },
       { text: "Deadline", value: "deadlineTime" },
-      { text: "Created", value: "lotteryDateCreated" },
     ],
 
     dialog: false,
@@ -108,23 +72,22 @@ export default {
     lotteryDetailDialog: false,
     callResult: { finished: true, authorized: false, error: null, info: null },
   }),
-  async mounted() {
+  mounted() {
     // this code snippet takes the account (wallet) that is currently active
     this.$web3.eth.getAccounts().then((accounts) => {
       [this.account] = accounts;
     });
   },
   created() {
-    // window.ethereum.on('accountsChanged', function (accounts) { // Time to reloadyour interface with accounts[0]!
-    //   this.account = accounts;
-    // })
     this.getProjects();
   },
   methods: {
     lotteryDetail(lottery) {
-      this.$refs.lotteryDialog.openDialog(lottery);
+      this.$router.push({
+        name: "LotteryDetail",
+        params: { obj: { ...lottery } },
+      });
     },
-
     updateDialog(val) {
       this.lotteryDetailDialog = val;
     },
@@ -136,11 +99,12 @@ export default {
         .then((projects) => {
           projects.forEach((projectAddress) => {
             const projectInst = lottery(projectAddress);
+            let projectInfo = null;
             projectInst.methods
               .getDetails()
               .call()
               .then((projectData) => {
-                const projectInfo = projectData;
+                projectInfo = projectData;
                 projectInfo.isLoading = false;
                 projectInfo.contract = projectInst;
                 projectInfo.deadlineTime =
@@ -150,8 +114,25 @@ export default {
 
                 this.projectData.push(projectInfo);
                 this.callResult.finished = true;
+              })
+              .catch((e) => {
+                this.callResult.finished = true;
+              });
+
+            projectInst.methods
+              .getPlayersDetails()
+              .call()
+              .then((projectData) => {
+                projectInfo.players = projectData.lotteryPlayers;
+                projectInfo.tickets = projectData.lotteryTickets;
+              })
+              .catch((e) => {
+                this.callResult.finished = true;
               });
           });
+        })
+        .catch((e) => {
+          this.callResult.finished = true;
         });
     },
     pickWinner(lottery) {
@@ -163,36 +144,11 @@ export default {
         .then(() => {})
         .catch(() => {});
     },
-    startProject(newProject) {
-      newProject.isLoading = true;
-      createLottery.methods
-        .startProject(
-          (newProject.owner = this.account),
-          newProject.title,
-          newProject.description,
-          newProject.deadline,
-          newProject.ticketPrice
-        )
-        .send({
-          from: this.account,
-        })
-        .then((res) => {
-          newProject.isLoading = false;
-          const projectInfo = res.events.ProjectStarted.returnValues;
-          projectInfo.currentAmount = 0;
-          projectInfo.currentState = 0;
-          projectInfo.deadlineTime =
-            projectInfo.deadlineTime.toString() + "000";
-          projectInfo.contract = lottery(projectInfo.contractAddress);
-          this.projectData.push(projectInfo);
-          this.$refs.startProjectDialog.closeDialog();
-        })
-        .catch(() => {
-          newProject.isLoading = false;
-        });
-    },
     getSelectedAddress() {
       return window.ethereum.selectedAddress;
+    },
+    createProject() {
+      this.$router.push("/CreateProject");
     },
     getDateFormat(uintDate) {
       return this.$utils.formatDate(new Date(+uintDate));

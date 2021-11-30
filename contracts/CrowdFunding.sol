@@ -2,7 +2,6 @@
 pragma solidity ^0.7.0;
 
 import "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
-import "../console.sol";
 
 contract lotteryCreator {
     using SafeMath for uint256;
@@ -18,7 +17,8 @@ contract lotteryCreator {
         string projectTitle,
         string projectDesc,
         uint256 deadline,
-        uint256 ticketPrice
+        uint256 ticketPrice,
+        uint256 numberWinners
     );
 
     /** @dev Function to start a new project.
@@ -32,7 +32,8 @@ contract lotteryCreator {
         string calldata title,
         string calldata description,
         uint256 deadlineDate,
-        uint256 ticketPrice
+        uint256 ticketPrice,
+        uint256 numberWinners
     ) external {
         uint256 raiseUntil = deadlineDate;
         Lottery newProject = new Lottery(
@@ -40,7 +41,8 @@ contract lotteryCreator {
             title,
             description,
             raiseUntil,
-            ticketPrice
+            ticketPrice,
+            numberWinners
         );
         lotteries.push(newProject);
         emit ProjectStarted(
@@ -49,7 +51,8 @@ contract lotteryCreator {
             title,
             description,
             raiseUntil,
-            ticketPrice
+            ticketPrice,
+            numberWinners
         );
     }
 
@@ -74,8 +77,10 @@ contract Lottery {
     State public state = State.Open; // initialize on create
     mapping(address => uint256) public contributors;
     address[] public players;
+    address[] public tickets;
     uint256 playersLength;
-    address public winner;
+    address[] public winner;
+    uint256 public numberOfWinners;
 
     enum State {
         Open,
@@ -96,7 +101,8 @@ contract Lottery {
         string memory projectTitle,
         string memory projectDesc,
         uint256 deadlineTime,
-        uint256 projectTicketPrice
+        uint256 projectTicketPrice,
+        uint256 numberWinners
     ) public {
         creator = projectStarter;
         title = projectTitle;
@@ -105,15 +111,22 @@ contract Lottery {
         deadline = deadlineTime;
         currentBalance = 0;
         created = block.timestamp;
+        numberOfWinners = numberWinners;
     }
 
-    function buyTicket(uint256 overralPrice) public payable {
+    function buyTicket(uint256 overralPrice, uint256 ticketAmount)
+        public
+        payable
+    {
         require(block.timestamp < deadline); // in the fundraising period
         require(overralPrice > 0);
 
         contributors[msg.sender] = contributors[msg.sender].add(overralPrice);
         currentBalance = currentBalance.add(overralPrice);
 
+        for (uint256 i = 0; i < ticketAmount; i++) {
+            tickets.push(msg.sender);
+        }
         players.push(msg.sender);
         emit Transfer(msg.sender, overralPrice);
         isLotteryOpen();
@@ -137,7 +150,7 @@ contract Lottery {
         return
             uint256(
                 keccak256(
-                    abi.encodePacked(block.difficulty, block.timestamp, players)
+                    abi.encodePacked(block.difficulty, block.timestamp, tickets)
                 )
             );
     }
@@ -145,10 +158,17 @@ contract Lottery {
     function pickWinner() public payable restricted {
         require(block.timestamp > deadline);
 
-        uint256 index = random() % players.length;
-        winner = players[index];
-        payable(winner).transfer(address(this).balance);
-        players = new address[](0);
+        for (uint256 i = 0; i < numberOfWinners; i++) {
+            uint256 index = random() % tickets.length;
+            winner.push(tickets[index]);
+            for (uint256 j = 0; j < tickets.length; j++) {
+                if (tickets[j] == winner[i]) {
+                    delete tickets[j];
+                }
+            }
+            payable(winner[i]).transfer(address(this).balance);
+        }
+        tickets = new address[](0);
     }
 
     modifier restricted() {
@@ -202,7 +222,7 @@ contract Lottery {
             State currentState,
             uint256 currentAmount,
             uint256 ticketPrice,
-            address lotteryWinner,
+            address[] memory lotteryWinner,
             uint256 lotteryPlayersLength,
             uint256 lotteryDateCreated
         )
@@ -217,5 +237,21 @@ contract Lottery {
         lotteryWinner = winner;
         lotteryPlayersLength = playersLength;
         lotteryDateCreated = created;
+    }
+
+    function purchasedByAddress(address _key) public view returns (uint256) {
+        return contributors[_key];
+    }
+
+    function getPlayersDetails()
+        public
+        view
+        returns (
+            address[] memory lotteryPlayers,
+            address[] memory lotteryTickets
+        )
+    {
+        lotteryPlayers = players;
+        lotteryTickets = tickets;
     }
 }

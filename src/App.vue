@@ -1,8 +1,8 @@
 <template>
   <v-app id="fei_dp_lottery">
     <app-app-bar @switch-drawer="switchDrawer"></app-app-bar>
-    <app-app-page></app-app-page>
-    <app-app-drawer v-model="drawer"></app-app-drawer>
+    <app-app-page :account="account"></app-app-page>
+    <app-app-drawer :account="account" v-model="drawer"></app-app-drawer>
   </v-app>
 </template>
 
@@ -13,10 +13,12 @@ export default {
   components: {},
 
   data() {
-    return { drawer: true };
+    return { drawer: true, account: "" };
   },
   created() {
-    //this.$root.$i18n.locale = locale.split("-")[0];
+    this.$web3.eth.getAccounts().then((accounts) => {
+      [this.account] = accounts;
+    });
   },
 
   methods: {

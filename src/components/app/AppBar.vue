@@ -1,8 +1,8 @@
 <template>
   <v-app-bar elevate-on-scroll color="blue lighten-1" app>
-    <v-app-bar-nav-icon @click.stop="switchDrawer" />
+    <!-- <v-app-bar-nav-icon @click.stop="switchDrawer" /> -->
 
-    <v-toolbar-title> DP Lottery </v-toolbar-title>
+    <v-toolbar-title> Dashboard </v-toolbar-title>
 
     <v-spacer />
 
