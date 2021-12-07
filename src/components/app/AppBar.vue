@@ -2,20 +2,9 @@
   <v-app-bar elevate-on-scroll color="blue lighten-1" app>
     <!-- <v-app-bar-nav-icon @click.stop="switchDrawer" /> -->
 
-    <v-toolbar-title> Dashboard </v-toolbar-title>
+    <v-toolbar-title> Lottery </v-toolbar-title>
 
     <v-spacer />
-
-    <v-text-field
-      flat
-      solo-inverted
-      hide-details
-      prepend-inner-icon="mdi-magnify"
-      append-icon="mdi-delete"
-      :label="$i18n.t('search')"
-      class="pa-2"
-      style="max-width: 600px"
-    />
   </v-app-bar>
 </template>
 

@@ -17,33 +17,10 @@
         dense
         v-for="lottery in projectData"
         :key="lottery.projectTitle"
-        style="width: 450px; margin: 0 auto"
+        style="justify-content: center; text-align: left; display: grid"
       >
         <v-list-item-content>
-          <v-card elevation="4" height="225">
-            <v-card-title class="justify-center"
-              >{{ lottery.projectTitle }}
-            </v-card-title>
-            <v-card-text>
-              <v-row class="text-center">
-                <v-col
-                  ><v-chip>{{ lottery.currentAmount }} ETH </v-chip>
-                </v-col>
-              </v-row>
-
-              <v-row class="text-center">
-                <v-col>{{ getDateFormat(lottery.deadlineTime) }} </v-col>
-              </v-row>
-            </v-card-text>
-            <v-card-actions class="justify-center">
-              <v-chip
-                @click="lotteryDetail(lottery)"
-                color="deep-purple lighten-2"
-                text-color="white"
-                >Get Tickets
-              </v-chip>
-            </v-card-actions>
-          </v-card>
+          <LotteryCard :lottery="lottery" />
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -53,10 +30,13 @@
 <script>
 import createLottery from "../../contracts/createLotteryInstance";
 import lottery from "../../contracts/lotteryInstance";
+import LotteryCard from "@/components/LotteryCard";
 
 export default {
   name: "HelloWorld",
-
+  components: {
+    LotteryCard,
+  },
   data: () => ({
     headers: [
       { text: "Title", value: "projectTitle" },
@@ -74,20 +54,15 @@ export default {
   }),
   mounted() {
     // this code snippet takes the account (wallet) that is currently active
+  },
+  created() {
     this.$web3.eth.getAccounts().then((accounts) => {
       [this.account] = accounts;
     });
-  },
-  created() {
+
     this.getProjects();
   },
   methods: {
-    lotteryDetail(lottery) {
-      this.$router.push({
-        name: "LotteryDetail",
-        params: { obj: { ...lottery } },
-      });
-    },
     updateDialog(val) {
       this.lotteryDetailDialog = val;
     },
@@ -101,7 +76,7 @@ export default {
             const projectInst = lottery(projectAddress);
             let projectInfo = null;
             projectInst.methods
-              .getDetails()
+              .getDetails(this.account)
               .call()
               .then((projectData) => {
                 projectInfo = projectData;
@@ -150,9 +125,7 @@ export default {
     createProject() {
       this.$router.push("/CreateProject");
     },
-    getDateFormat(uintDate) {
-      return this.$utils.formatDate(new Date(+uintDate));
-    },
+
     getRefund() {
       this.contract.methods
         .getRefund()

@@ -3,6 +3,12 @@ pragma solidity ^0.7.0;
 
 import "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 
+enum State {
+    Open,
+    Closed,
+    Suspended
+}
+
 contract lotteryCreator {
     using SafeMath for uint256;
 
@@ -18,7 +24,8 @@ contract lotteryCreator {
         string projectDesc,
         uint256 deadline,
         uint256 ticketPrice,
-        uint256 numberWinners
+        uint256 numberWinners,
+        uint256[] rewards
     );
 
     /** @dev Function to start a new project.
@@ -33,7 +40,8 @@ contract lotteryCreator {
         string calldata description,
         uint256 deadlineDate,
         uint256 ticketPrice,
-        uint256 numberWinners
+        uint256 numberWinners,
+        uint256[] calldata rewards
     ) external {
         uint256 raiseUntil = deadlineDate;
         Lottery newProject = new Lottery(
@@ -42,7 +50,8 @@ contract lotteryCreator {
             description,
             raiseUntil,
             ticketPrice,
-            numberWinners
+            numberWinners,
+            rewards
         );
         lotteries.push(newProject);
         emit ProjectStarted(
@@ -52,8 +61,71 @@ contract lotteryCreator {
             description,
             raiseUntil,
             ticketPrice,
-            numberWinners
+            numberWinners,
+            rewards
         );
+    }
+
+    function participatedByAddress(address _address)
+        external
+        view
+        returns (uint256)
+    {
+        uint256 count = 0;
+        for (uint256 i = 0; i < lotteries.length; i++) {
+            Lottery ltr = lotteries[i];
+            address[] memory players = ltr.getPlayers();
+            for (uint256 j = 0; j < players.length; j++) {
+                if (players[j] == _address) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    function getTotalSpent(address _address) external view returns (uint256) {
+        uint256 totalSpent = this.getRewardsWonByAddress(_address) +
+            this.getSpentState(_address);
+        return totalSpent;
+    }
+
+    function getSpentState(address _address) external view returns (uint256) {
+        uint256 spent = 0;
+
+        for (uint256 i = 0; i < lotteries.length; i++) {
+            Lottery ltr = lotteries[i];
+            spent = spent + ltr.getContributed(_address);
+        }
+
+        return spent;
+    }
+
+    function getRewardsWonByAddress(address _address)
+        external
+        view
+        returns (uint256)
+    {
+        uint256 rewardsWon = 0;
+
+        for (uint256 i = 0; i < lotteries.length; i++) {
+            Lottery ltr = lotteries[i];
+            rewardsWon = rewardsWon + ltr.getRewardsByAccount(_address);
+        }
+        return rewardsWon;
+    }
+
+    function returnClosedProjects() external view returns (Lottery[] memory) {
+        Lottery[] memory ltrs;
+        uint256 count = 0;
+        for (uint256 i = 0; i < lotteries.length; i++) {
+            Lottery ltr = lotteries[i];
+            if (ltr.getState() == State.Closed) {
+                ltrs[count] = ltr;
+                count++;
+            }
+        }
+        return ltrs;
     }
 
     /** @dev Function to get all projects' contract addresses.
@@ -79,14 +151,15 @@ contract Lottery {
     address[] public players;
     address[] public tickets;
     uint256 playersLength;
-    address[] public winner;
     uint256 public numberOfWinners;
+    uint256[] public rewards;
 
-    enum State {
-        Open,
-        Closed,
-        Suspended
+    struct winner {
+        uint256 amount;
+        address account;
     }
+    mapping(uint256 => winner) winners;
+    uint256[] public winnerIds;
 
     // Modifier to check if the function caller is the project creator
     modifier isCreator() {
@@ -94,6 +167,7 @@ contract Lottery {
         _;
     }
 
+    event LotteryStateChanged(State newState);
     event Transfer(address indexed _from, uint256 _value);
 
     constructor(
@@ -102,7 +176,8 @@ contract Lottery {
         string memory projectDesc,
         uint256 deadlineTime,
         uint256 projectTicketPrice,
-        uint256 numberWinners
+        uint256 numberWinners,
+        uint256[] memory lotteryRewards
     ) public {
         creator = projectStarter;
         title = projectTitle;
@@ -112,6 +187,30 @@ contract Lottery {
         currentBalance = 0;
         created = block.timestamp;
         numberOfWinners = numberWinners;
+        rewards = lotteryRewards;
+    }
+
+    function getRewardsByAccount(address _address)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 rewardsWon = 0;
+        for (uint256 i = 0; i < numberOfWinners; i++) {
+            winner storage ltWinner = winners[i];
+            if (ltWinner.account == _address) {
+                rewardsWon = rewardsWon + ltWinner.amount;
+            }
+        }
+        return rewardsWon;
+    }
+
+    function getContributed(address _address) public view returns (uint256) {
+        return contributors[_address];
+    }
+
+    function getState() public view returns (State) {
+        return state;
     }
 
     function buyTicket(uint256 overralPrice, uint256 ticketAmount)
@@ -127,19 +226,19 @@ contract Lottery {
         for (uint256 i = 0; i < ticketAmount; i++) {
             tickets.push(msg.sender);
         }
-        players.push(msg.sender);
-        emit Transfer(msg.sender, overralPrice);
-        isLotteryOpen();
-    }
 
-    /** @dev Function to change the project state depending on conditions.
-     */
-    function isLotteryOpen() public {
-        if (block.timestamp > deadline) {
-            state = State.Closed;
-        } else {
-            state = State.Open;
+        bool doesPlayerEntered = false;
+        for (uint256 i = 0; i < players.length; i++) {
+            if (msg.sender == players[i]) {
+                doesPlayerEntered = true;
+            }
         }
+
+        if (!doesPlayerEntered) {
+            players.push(msg.sender);
+        }
+
+        emit Transfer(msg.sender, overralPrice);
     }
 
     function getOwner() public view returns (address) {
@@ -158,17 +257,25 @@ contract Lottery {
     function pickWinner() public payable restricted {
         require(block.timestamp > deadline);
 
+        uint256 reward;
+        currentBalance = address(this).balance;
+
         for (uint256 i = 0; i < numberOfWinners; i++) {
+            reward = (uint256(rewards[i]) * currentBalance) / uint256(100);
             uint256 index = random() % tickets.length;
-            winner.push(tickets[index]);
+            winner storage ltWinner = winners[i];
+            ltWinner.account = tickets[index];
+            ltWinner.amount = reward;
+            winnerIds.push(i);
             for (uint256 j = 0; j < tickets.length; j++) {
-                if (tickets[j] == winner[i]) {
+                if (tickets[j] == ltWinner.account) {
                     delete tickets[j];
                 }
             }
-            payable(winner[i]).transfer(address(this).balance);
+            payable(ltWinner.account).transfer(reward);
         }
         tickets = new address[](0);
+        _changeState(State.Closed);
     }
 
     modifier restricted() {
@@ -200,18 +307,28 @@ contract Lottery {
         return false;
     }
 
-    function getCurrentState() public view returns (State) {
-        if (block.timestamp > deadline) {
-            return State.Closed;
-        } else {
-            return State.Open;
+    function revealWinners()
+        public
+        view
+        returns (uint256[] memory, address[] memory)
+    {
+        require(block.timestamp > deadline);
+
+        address[] memory addrs = new address[](winnerIds.length);
+        uint256[] memory amounts = new uint256[](winnerIds.length);
+
+        for (uint256 i = 0; i < winnerIds.length; i++) {
+            winner storage ltWinner = winners[i];
+            addrs[i] = ltWinner.account;
+            amounts[i] = ltWinner.amount;
         }
+        return (amounts, addrs);
     }
 
     /** @dev Function to get specific information about the project.
      * @return projectStarter Returns all the project's details
      */
-    function getDetails()
+    function getDetails(address account)
         public
         view
         returns (
@@ -222,9 +339,10 @@ contract Lottery {
             State currentState,
             uint256 currentAmount,
             uint256 ticketPrice,
-            address[] memory lotteryWinner,
             uint256 lotteryPlayersLength,
-            uint256 lotteryDateCreated
+            uint256 lotteryDateCreated,
+            uint256[] memory lotteryRewards,
+            uint256 purchased
         )
     {
         projectStarter = creator;
@@ -234,13 +352,18 @@ contract Lottery {
         currentState = state;
         currentAmount = currentBalance;
         ticketPrice = priceTicket;
-        lotteryWinner = winner;
         lotteryPlayersLength = playersLength;
         lotteryDateCreated = created;
+        lotteryRewards = rewards;
+        purchased = contributors[account];
     }
 
-    function purchasedByAddress(address _key) public view returns (uint256) {
-        return contributors[_key];
+    // function purchasedByAddress(address _key) public view returns (uint256) {
+    //     return contributors[_key];
+    // }
+    function _changeState(State _newState) private {
+        state = _newState;
+        emit LotteryStateChanged(state);
     }
 
     function getPlayersDetails()

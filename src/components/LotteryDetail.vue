@@ -3,6 +3,7 @@
     <v-card>
       <v-card-title>
         <CountDownTimer
+          v-if="lottery.deadlineTime > new Date().getTime()"
           class="timer"
           :date="formatDateToTimer(lottery.deadlineTime)"
         />
@@ -16,72 +17,21 @@
         <div class="text--primary">Balance: {{ lottery.currentAmount }}</div>
         <div class="text--primary">Purchased: {{ lottery.purchased }}</div>
 
-        <v-timeline align-top dense>
-          <v-timeline-item color="teal lighten-3" small>
-            <v-row class="pt-1">
-              <v-col cols="3">
-                <strong>{{ getDateFormat(lottery.lotteryDateCreated) }}</strong>
-              </v-col>
-              <v-col>
-                <strong>Created</strong>
-                <div class="text-caption">Lottery</div>
-              </v-col>
-            </v-row>
-          </v-timeline-item>
-          <!-- 
-          <v-timeline-item color="pink" small>
-            <v-row class="pt-1">
-              <v-col cols="3">
-                <strong>12pm</strong>
-              </v-col>
-              <v-col>
-                <strong>Lunch break</strong>
-              </v-col>
-            </v-row>
-          </v-timeline-item> -->
-          <v-timeline-item
-            v-if="lottery.deadlineTime > new Date().getTime()"
-            color="pink"
-            small
-          >
-            <v-row class="pt-1">
-              <v-col cols="3">
-                <strong>{{ getDateFormat(new Date().getTime()) }}</strong>
-              </v-col>
-              <v-col>
-                <strong>Now</strong>
-              </v-col>
-            </v-row>
-          </v-timeline-item>
-
-          <v-timeline-item color="teal lighten-3" small>
-            <v-row class="pt-1">
-              <v-col cols="3">
-                <strong>{{ getDateFormat(lottery.deadlineTime) }}</strong>
-              </v-col>
-              <v-col>
-                <strong>Deadline</strong>
-              </v-col>
-            </v-row>
-          </v-timeline-item>
-          <v-timeline-item
-            v-if="lottery.lotteryWinner != ''"
-            color="pink"
-            small
-          >
-            <v-row class="pt-1">
-              <v-col cols="3">
-                <strong>{{ lottery.lotteryWinner }}</strong>
-              </v-col>
-              <v-col>
-                <strong>Winner Picked</strong>
-              </v-col>
-            </v-row>
-          </v-timeline-item>
-        </v-timeline>
+        <v-list two-line>
+          Winners:
+          <v-list-item v-for="wnr in winners" :key="wnr.address">
+            <v-list-item-content>
+              <v-list-item-title>{{ wnr.address }}</v-list-item-title>
+              <v-list-item-subtitle
+                >{{ $web3.utils.fromWei(wnr.reward, "ether"), }}
+                eth</v-list-item-subtitle
+              >
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
 
         <!-- <p class="text-h6 text--primary">Admin: {{ lottery.projectStarter }}</p> -->
-        <v-row v-if="lottery.lotteryWinner == ''">
+        <v-row v-if="winners.length == 0">
           <v-col md="4" cols="12"> </v-col>
           <v-col md="8" cols="12">
             <v-progress-circular
@@ -91,7 +41,7 @@
               :value="winProbability"
               color="primary"
             >
-              {{ winProbability }} %
+              {{ winProbability.toFixed(2) }} %
             </v-progress-circular>
             <v-text-field
               v-model="lottery.amount"
@@ -142,6 +92,8 @@ export default {
       dialog: false,
       lottery: { playersLength: 0, ticketsLength: 0 },
       account: null,
+      winners: [],
+      winner: {},
     };
   },
   mounted() {
@@ -150,23 +102,28 @@ export default {
     //   [this.account] = accounts;
     // });
     // this code snippet takes the account (wallet) that is currently active
+  },
+  created() {
     this.$web3.eth.getAccounts().then((accounts) => {
       [this.account] = accounts;
     });
     this.lottery = this.$route.params.obj;
-  },
-  created() {
-    if (this.account != null) {
-      this.lottery.contract.methods
-        .purchasedByAddress(this.account)
-        .call()
-        .then((data) => {
-          this.lottery.purchased = data;
-        })
-        .catch((e) => {
-          this.callResult.finished = true;
-        });
-    }
+
+    this.lottery.contract.methods
+      .revealWinners()
+      .call()
+      .then((res) => {
+        for (let i = 0; i < res[0].length; i++) {
+          this.winner = {};
+          let array = res[0];
+          let array2 = res[1];
+
+          this.winner.reward = array[i];
+          this.winner.address = array2[i];
+          this.winners.push(this.winner);
+        }
+      })
+      .catch(() => {});
   },
   computed: {
     numberOfPlayers: function () {
@@ -226,16 +183,12 @@ export default {
     },
 
     pickWinner() {
-      console.log(this.account);
-      console.log(this.lottery.deadlineTime);
-
       this.lottery.contract.methods
         .pickWinner()
         .send({
           from: this.account,
         })
         .then((res) => {
-          console.log(res);
           this.lottery.isLoading = false;
         })
         .catch(() => {
@@ -249,7 +202,6 @@ export default {
 .timer {
   align-items: center;
   margin: 0 auto;
-  background-color: #34495e;
   display: flex;
   justify-content: center;
   top: 0;

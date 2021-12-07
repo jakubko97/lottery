@@ -8,7 +8,7 @@
       </v-card-title>
       <v-card-text class="pt-0">
         <v-row class="pt-0">
-          <v-col md="12">
+          <v-col md="6" cols="12">
             <v-text-field
               label="Title"
               persistent-hint
@@ -16,15 +16,7 @@
             >
             </v-text-field>
           </v-col>
-          <v-col md="12">
-            <v-textarea
-              label="Description"
-              persistent-hint
-              v-model="newProject.description"
-            >
-            </v-textarea>
-          </v-col>
-          <v-col md="6">
+          <v-col md="6" cols="12">
             <v-text-field
               label="Ticket Price (ETH)"
               type="number"
@@ -34,20 +26,50 @@
             >
             </v-text-field>
           </v-col>
-          <v-col md="6">
-            <v-text-field
-              label="Number of winners"
-              type="number"
-              min="0"
-              v-model="newProject.numberOfWinners"
+        </v-row>
+        <v-row>
+          <v-col md="6" cols="12">
+            <v-textarea
+              label="Description"
+              persistent-hint
+              v-model="newProject.description"
             >
-            </v-text-field>
+            </v-textarea>
           </v-col>
-
-          <v-col md="6">
-            <v-date-picker :min="nowDate" v-model="date"></v-date-picker>
+          <v-col md="6" cols="12">
+            <v-select
+              v-model="newProject.rewards"
+              :hint="`${newProject.rewards.value.length} vyhercovia`"
+              :items="rewards"
+              item-text="text"
+              item-value="value"
+              label="Select"
+              persistent-hint
+              return-object
+              single-line
+            ></v-select>
           </v-col>
-          <v-col md="6">
+        </v-row>
+        <v-row>
+          <v-col md="12">
+            <v-switch
+              v-model="newProject.saleEnabled"
+              :label="`Aktivovať zľavy`"
+            ></v-switch>
+          </v-col>
+        </v-row>
+        <v-row v-if="newProject.saleEnabled">
+          <v-col md="12">
+            <v-text-field value="5% pri kúpe 5 a viac tiketov"></v-text-field>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col md="12">
+            <v-date-picker
+              class="mr-5"
+              :min="nowDate"
+              v-model="date"
+            ></v-date-picker>
             <v-time-picker
               :min="nowDate == date ? nowTime : ''"
               v-model="time"
@@ -83,7 +105,24 @@ export default {
     date: null,
     time: null,
     account: null,
-    newProject: { isLoading: false },
+    rewards: [
+      { text: "1. miesto 70%, 2. miesto 30%", value: [70, 30] },
+      { text: "1. miesto 80%, 2. miesto 20%", value: [80, 20] },
+      { text: "1. miesto 60%, 2. miesto 40%", value: [60, 40] },
+      {
+        text: "1. miesto 70%, 2. miesto 20%, 3. miesto 10%",
+        value: [70, 20, 10],
+      },
+      {
+        text: "1. miesto 60%, 2. miesto 25%, 3. miesto 15%",
+        value: [60, 25, 15],
+      },
+    ],
+    newProject: {
+      saleEnabled: false,
+      isLoading: false,
+      rewards: { text: "1. miesto 70%, 2. miesto 30%", value: [70, 30] },
+    },
   }),
   mounted() {
     // this code snippet takes the account (wallet) that is currently active
@@ -106,7 +145,8 @@ export default {
           this.newProject.description,
           this.newProject.deadline,
           this.newProject.ticketPrice,
-          this.newProject.numberOfWinners
+          this.newProject.rewards.value.length,
+          this.newProject.rewards.value
         )
         .send({
           from: this.account,

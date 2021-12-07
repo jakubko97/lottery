@@ -1,5 +1,7 @@
 <template id="countdown-template">
-  <div class="countdown">
+  <v-card color="blue lighten-1" elevation="0" class="countdown">
+    <v-card-title class="justify-center"> </v-card-title>
+
     <div class="block">
       <p class="digit">{{ days | two_digits }}</p>
       <p class="text">Days</p>
@@ -16,7 +18,7 @@
       <p class="digit">{{ seconds | two_digits }}</p>
       <p class="text">Seconds</p>
     </div>
-  </div>
+  </v-card>
 </template>
 
 <script>
@@ -70,7 +72,6 @@ export default {
 }
 
 .text {
-  color: #1abc9c;
   font-size: 18px;
   font-family: "Roboto Condensed", serif;
   font-weight: 20;

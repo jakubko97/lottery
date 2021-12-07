@@ -39,9 +39,9 @@
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title>{{ $i18n.t(link.meta.label) }}</v-list-item-title>
-          <v-list-item-subtitle v-if="link.meta.label == 'Profile'">
+          <!-- <v-list-item-subtitle v-if="link.meta.label == 'Profile'">
             {{ account }}
-          </v-list-item-subtitle>
+          </v-list-item-subtitle> -->
         </v-list-item-content>
       </v-list-item>
     </v-list>
