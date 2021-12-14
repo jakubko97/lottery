@@ -1,55 +1,27 @@
 <template>
   <v-container>
-    <v-list subheader>
-      <v-row>
-        <v-col cols="12" md="10">
-          <v-subheader>Lotteries</v-subheader>
-        </v-col>
-        <v-col cols="12" md="2">
-          <v-fab-transition>
-            <v-btn fab color="primary" @click="createProject()">
-              <v-icon>mdi-plus-box</v-icon>
-            </v-btn>
-          </v-fab-transition>
-        </v-col>
-      </v-row>
-      <v-list-item
-        dense
-        v-for="lottery in projectData"
-        :key="lottery.projectTitle"
-        style="justify-content: center; text-align: left; display: grid"
-      >
-        <v-list-item-content>
-          <LotteryCard :lottery="lottery" />
-        </v-list-item-content>
-      </v-list-item>
+    <v-list>
+      <DashboardHeader />
+      <LotteryList :projectData="projectData" />
     </v-list>
   </v-container>
 </template>
 
 <script>
-import createLottery from "../../contracts/createLotteryInstance";
-import lottery from "../../contracts/lotteryInstance";
-import LotteryCard from "@/components/LotteryCard";
+import createLottery from "../../../contracts/createLotteryInstance";
+import lottery from "../../../contracts/lotteryInstance";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import LotteryList from "@/components/reusable/LotteryList";
 
 export default {
   name: "HelloWorld",
   components: {
-    LotteryCard,
+    DashboardHeader,
+    LotteryList,
   },
   data: () => ({
-    headers: [
-      { text: "Title", value: "projectTitle" },
-      { text: "Price", value: "ticketPrice" },
-      { text: "Deadline", value: "deadlineTime" },
-    ],
-
-    dialog: false,
     projectData: [],
-    search: "",
     account: null,
-    amount: null,
-    lotteryDetailDialog: false,
     callResult: { finished: true, authorized: false, error: null, info: null },
   }),
   mounted() {
@@ -110,42 +82,8 @@ export default {
           this.callResult.finished = true;
         });
     },
-    pickWinner(lottery) {
-      lottery.contract.methods
-        .pickWinner()
-        .send({
-          from: this.account,
-        })
-        .then(() => {})
-        .catch(() => {});
-    },
-    getSelectedAddress() {
-      return window.ethereum.selectedAddress;
-    },
     createProject() {
       this.$router.push("/CreateProject");
-    },
-
-    getRefund() {
-      this.contract.methods
-        .getRefund()
-        .send({
-          from: this.account,
-        })
-        .then(() => {
-          this.update();
-        })
-        .catch(() => {});
-    },
-
-    claimFunds() {
-      this.contract.methods
-        .claimFunds()
-        .send({
-          from: this.account,
-        })
-        .then(() => {})
-        .catch(() => {});
     },
   },
 };

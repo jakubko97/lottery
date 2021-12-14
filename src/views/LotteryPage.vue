@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import LotteryWrapper from "@/components/LotteryWrapper";
+import LotteryWrapper from "@/components/dashboard/LotteryWrapper";
 
 export default {
   name: "LotteryPage",

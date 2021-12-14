@@ -85,7 +85,7 @@ contract lotteryCreator {
     }
 
     function getTotalSpent(address _address) external view returns (uint256) {
-        uint256 totalSpent = this.getRewardsWonByAddress(_address) +
+        uint256 totalSpent = this.getRewardsWonByAddress(_address) -
             this.getSpentState(_address);
         return totalSpent;
     }
@@ -95,7 +95,7 @@ contract lotteryCreator {
 
         for (uint256 i = 0; i < lotteries.length; i++) {
             Lottery ltr = lotteries[i];
-            spent = spent + ltr.getContributed(_address);
+            spent = spent + uint256(ltr.getContributed(_address));
         }
 
         return spent;
@@ -116,11 +116,23 @@ contract lotteryCreator {
     }
 
     function returnClosedProjects() external view returns (Lottery[] memory) {
-        Lottery[] memory ltrs;
+        return this.getProjectsByState(State.Closed);
+    }
+
+    function returnOpenProjects() external view returns (Lottery[] memory) {
+        return this.getProjectsByState(State.Open);
+    }
+
+    function getProjectsByState(State state)
+        external
+        view
+        returns (Lottery[] memory)
+    {
+        Lottery[] memory ltrs = new Lottery[](lotteries.length);
         uint256 count = 0;
         for (uint256 i = 0; i < lotteries.length; i++) {
             Lottery ltr = lotteries[i];
-            if (ltr.getState() == State.Closed) {
+            if (ltr.getState() == state) {
                 ltrs[count] = ltr;
                 count++;
             }
@@ -206,7 +218,7 @@ contract Lottery {
     }
 
     function getContributed(address _address) public view returns (uint256) {
-        return contributors[_address];
+        return contributors[_address] * 1 ether;
     }
 
     function getState() public view returns (State) {
@@ -274,7 +286,6 @@ contract Lottery {
             }
             payable(ltWinner.account).transfer(reward);
         }
-        tickets = new address[](0);
         _changeState(State.Closed);
     }
 

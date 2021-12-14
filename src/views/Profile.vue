@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import AccountProfile from "@/components/AccountProfile";
+import AccountProfile from "@/components/profile/AccountProfile";
 
 export default {
   name: "AccountProfileView",

@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import LotteryArchive from "@/components/LotteryArchive";
+import LotteryArchive from "@/components/archive/LotteryArchive";
 
 export default {
   name: "ArchiveView",

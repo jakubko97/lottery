@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import createLottery from "../../contracts/createLotteryInstance";
+import createLottery from "../../../contracts/createLotteryInstance";
 
 export default {
   name: "AccountProfile",
@@ -54,7 +54,7 @@ export default {
           });
 
         createLottery.methods
-          .getRewardsWonByAddress(this.account)
+          .getTotalSpent(this.account)
           .call()
           .then((res) => {
             this.profileInfo.rewardsWon = res;

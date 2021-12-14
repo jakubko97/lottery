@@ -1,66 +1,86 @@
 <template>
   <div>
-    <v-card>
-      <v-card-title>
-        <CountDownTimer
-          v-if="lottery.deadlineTime > new Date().getTime()"
-          class="timer"
-          :date="formatDateToTimer(lottery.deadlineTime)"
-        />
-      </v-card-title>
+    <v-card style="max-width: 600px; margin: 0 auto;">
+      <CountDownTimer
+        v-if="lottery.deadlineTime > new Date().getTime()"
+        class="timer"
+        :date="formatDateToTimer(lottery.deadlineTime)"
+      />
+      <v-card-title>{{ lottery.projectTitle }}</v-card-title>
       <v-card-text>
         <div v-if="lottery.projectStarter == account">ADMIN</div>
+        <div>
+          <v-icon class="mr-2" color="primary">mdi-cash</v-icon>
+          {{ lottery.ticketPrice }} ETH
+        </div>
+        <div>
+          <v-icon class="mr-2" color="primary">mdi-account-multiple</v-icon>
+          {{ numberOfPlayers }}
+        </div>
+        <div>
+          <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
+          {{ $web3.utils.fromWei(lottery.currentAmount, "ether") }} ETH
+        </div>
+        <div>
+          <v-icon class="mr-2" color="primary">mdi-timer-sand</v-icon>
+          {{ getDateFormat(lottery.deadlineTime) }}
+        </div>
         <div class="subtitle">Description: {{ lottery.projectDesc }}</div>
-        <div class="text--primary">Ticket Price: {{ lottery.ticketPrice }}</div>
-        <div class="text--primary">Players: {{ numberOfPlayers }}</div>
-        <div class="text--primary">Tickets: {{ numberOfTickets }}</div>
-        <div class="text--primary">Balance: {{ lottery.currentAmount }}</div>
-        <div class="text--primary">Purchased: {{ lottery.purchased }}</div>
 
-        <v-list two-line>
-          Winners:
-          <v-list-item v-for="wnr in winners" :key="wnr.address">
-            <v-list-item-content>
-              <v-list-item-title>{{ wnr.address }}</v-list-item-title>
-              <v-list-item-subtitle
-                >{{ $web3.utils.fromWei(wnr.reward, "ether"), }}
-                eth</v-list-item-subtitle
-              >
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
+        <v-divider class="ma-2 pa-2"></v-divider>
 
-        <!-- <p class="text-h6 text--primary">Admin: {{ lottery.projectStarter }}</p> -->
-        <v-row v-if="winners.length == 0">
-          <v-col md="4" cols="12"> </v-col>
-          <v-col md="8" cols="12">
+        <v-row>
+          <v-col></v-col>
+        </v-row>
+        <v-row>
+          <v-col>
             <v-progress-circular
               :rotate="360"
               :size="100"
               :width="15"
               :value="winProbability"
               color="primary"
-            >
-              {{ winProbability.toFixed(2) }} %
-            </v-progress-circular>
+            >{{ winProbability.toFixed(2) }} %</v-progress-circular>
+            Entered {{ lottery.purchased }} ETH
+          </v-col>
+        </v-row>
+
+        <v-divider class="ma-2 pa-2"></v-divider>
+
+        <v-list v-if="winners.length != 0" two-line>
+          <v-icon class="mr-2" color="orange">mdi-trophy</v-icon>Winners:
+          <v-list-item v-for="(wnr,index) in winners" :key="wnr.address">
+            <v-list-item-content>
+              {{ index + 1 }}. prize
+              <v-list-item-title>{{ wnr.address }}</v-list-item-title>
+              <v-list-item-subtitle>
+                {{ $web3.utils.fromWei(wnr.reward, "ether"), }}
+                eth
+              </v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+
+        <!-- <p class="text-h6 text--primary">Admin: {{ lottery.projectStarter }}</p> -->
+        <v-row v-if="winners.length == 0">
+          <v-col md="2" cols="12">
             <v-text-field
               v-model="lottery.amount"
               v-if="lottery.deadlineTime > new Date().getTime()"
               label="Tickets"
               type="number"
               height="30"
-            >
-            </v-text-field>
+            ></v-text-field>
+          </v-col>
 
+          <v-col md="4" cols="12">
             <v-btn
               :disabled="lottery.deadlineTime < new Date().getTime()"
               depressed
               color="primary"
               :loading="lottery.isLoading"
               @click.prevent="buyTicket()"
-            >
-              Buy
-            </v-btn>
+            >Buy</v-btn>
             <v-btn
               v-if="
                 lottery.deadlineTime < new Date().getTime() &&
@@ -70,9 +90,7 @@
               color="primary"
               :loading="lottery.isLoading"
               @click.prevent="pickWinner()"
-            >
-              Pick Winner
-            </v-btn>
+            >Pick Winner</v-btn>
           </v-col>
         </v-row>
       </v-card-text>
@@ -123,7 +141,7 @@ export default {
           this.winners.push(this.winner);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   },
   computed: {
     numberOfPlayers: function () {
