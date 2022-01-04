@@ -2,7 +2,7 @@
   <v-app id="fei_dp_lottery">
     <app-app-bar @switch-drawer="switchDrawer"></app-app-bar>
     <app-app-page :account="account"></app-app-page>
-    <app-app-drawer :account="account" v-model="drawer"></app-app-drawer>
+    <!-- <app-app-drawer :account="account" v-model="drawer"></app-app-drawer> -->
   </v-app>
 </template>
 

@@ -1,7 +1,6 @@
 <template>
   <v-container>
     <v-list>
-      <DashboardHeader />
       <LotteryList :projectData="projectData" />
     </v-list>
   </v-container>
@@ -10,13 +9,11 @@
 <script>
 import createLottery from "../../../contracts/createLotteryInstance";
 import lottery from "../../../contracts/lotteryInstance";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import LotteryList from "@/components/reusable/LotteryList";
 
 export default {
   name: "HelloWorld",
   components: {
-    DashboardHeader,
     LotteryList,
   },
   data: () => ({
