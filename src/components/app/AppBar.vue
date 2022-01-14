@@ -1,25 +1,22 @@
 <template>
-  <v-app-bar elevate-on-scroll color="blue lighten-1" app>
+  <v-app-bar elevate-on-scroll color="blue darken-1" app>
     <!-- <v-app-bar-nav-icon @click.stop="switchDrawer" /> -->
-
-    <v-toolbar-title> Lottery </v-toolbar-title>
+    <div class="headline">Blockchain Lottery</div>
     <template v-slot:extension>
-      <v-tabs v-model="tab" centered dark icons-and-text>
+      <v-tabs v-model="tab" centered dark>
+        
         <v-tabs-slider></v-tabs-slider>
 
-        <v-tab href="#tab-1">
-          Recents
-          <v-icon>mdi-phone</v-icon>
+        <v-tab :to="'/'">
+          Home
         </v-tab>
 
-        <v-tab href="#tab-2">
-          Favorites
-          <v-icon>mdi-heart</v-icon>
+        <v-tab :to="'/Archive'">
+          Archive
         </v-tab>
 
-        <v-tab href="#tab-3">
-          Nearby
-          <v-icon>mdi-account-box</v-icon>
+        <v-tab :to="'/AccountProfile'">
+          Profile
         </v-tab>
       </v-tabs>
 
@@ -46,6 +43,7 @@ export default {
   data() {
     return {
       drawer: true,
+      tab: null
     };
   },
   methods: {

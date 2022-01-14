@@ -25,7 +25,8 @@ contract lotteryCreator {
         uint256 deadline,
         uint256 ticketPrice,
         uint256 numberWinners,
-        uint256[] rewards
+        uint256[] rewards,
+        uint256 limitTickets
     );
 
     /** @dev Function to start a new project.
@@ -41,7 +42,8 @@ contract lotteryCreator {
         uint256 deadlineDate,
         uint256 ticketPrice,
         uint256 numberWinners,
-        uint256[] calldata rewards
+        uint256[] calldata rewards,
+        uint256 limitTickets
     ) external {
         uint256 raiseUntil = deadlineDate;
         Lottery newProject = new Lottery(
@@ -51,7 +53,8 @@ contract lotteryCreator {
             raiseUntil,
             ticketPrice,
             numberWinners,
-            rewards
+            rewards,
+            limitTickets
         );
         lotteries.push(newProject);
         emit ProjectStarted(
@@ -62,7 +65,8 @@ contract lotteryCreator {
             raiseUntil,
             ticketPrice,
             numberWinners,
-            rewards
+            rewards,
+            limitTickets
         );
     }
 
@@ -85,8 +89,13 @@ contract lotteryCreator {
     }
 
     function getTotalSpent(address _address) external view returns (uint256) {
-        uint256 totalSpent = this.getRewardsWonByAddress(_address) -
+        uint256 totalSpent = 0;
+        if(this.getRewardsWonByAddress(_address) > this.getSpentState(_address)){
+            totalSpent = this.getRewardsWonByAddress(_address) -
             this.getSpentState(_address);
+        }else {
+            totalSpent = this.getSpentState(_address) - this.getRewardsWonByAddress(_address);
+        }
         return totalSpent;
     }
 
@@ -110,7 +119,7 @@ contract lotteryCreator {
 
         for (uint256 i = 0; i < lotteries.length; i++) {
             Lottery ltr = lotteries[i];
-            rewardsWon = rewardsWon + ltr.getRewardsByAccount(_address);
+            rewardsWon = uint256(rewardsWon) + uint256(ltr.getRewardsByAccount(_address));
         }
         return rewardsWon;
     }
@@ -165,6 +174,7 @@ contract Lottery {
     uint256 playersLength;
     uint256 public numberOfWinners;
     uint256[] public rewards;
+    uint256 limitTickets;
 
     struct winner {
         uint256 amount;
@@ -189,7 +199,8 @@ contract Lottery {
         uint256 deadlineTime,
         uint256 projectTicketPrice,
         uint256 numberWinners,
-        uint256[] memory lotteryRewards
+        uint256[] memory lotteryRewards,
+        uint256 lotteryLimitTickets
     ) public {
         creator = projectStarter;
         title = projectTitle;
@@ -200,6 +211,7 @@ contract Lottery {
         created = block.timestamp;
         numberOfWinners = numberWinners;
         rewards = lotteryRewards;
+        limitTickets = lotteryLimitTickets;
     }
 
     function getRewardsByAccount(address _address)
@@ -211,7 +223,7 @@ contract Lottery {
         for (uint256 i = 0; i < numberOfWinners; i++) {
             winner storage ltWinner = winners[i];
             if (ltWinner.account == _address) {
-                rewardsWon = rewardsWon + ltWinner.amount;
+                rewardsWon = uint256(rewardsWon) + uint256(ltWinner.amount);
             }
         }
         return rewardsWon;
@@ -231,6 +243,7 @@ contract Lottery {
     {
         require(block.timestamp < deadline); // in the fundraising period
         require(overralPrice > 0);
+        require(limitTickets <= ticketAmount);
 
         contributors[msg.sender] = contributors[msg.sender].add(overralPrice);
         currentBalance = currentBalance.add(overralPrice);
@@ -266,12 +279,29 @@ contract Lottery {
             );
     }
 
+    function getEnteredTicketsByAccount(address _address) public view returns (uint256) {
+        uint256 ticketsByAccount = 0;
+        for (uint256 i = 0; i < tickets.length; i++) {
+            if (_address == tickets[i]) {
+                ticketsByAccount++;
+            }
+        }
+        return ticketsByAccount;
+    }    
+
+    function getWinProbabiltyByAccount(address _address) public view returns (uint256) {
+        // vraciam percenta + navyse 2 desatinimi cislami,
+        // kvoli tomu ze v Solidity sa neda pracovat s float
+        // na frontende ak vstup predelim 100, dostanem percenta
+        // napr 21,58
+        return (this.getEnteredTicketsByAccount(_address) * 10000) / tickets.length;
+    }
+
     function pickWinner() public payable restricted {
         require(block.timestamp > deadline);
 
         uint256 reward;
         currentBalance = address(this).balance;
-
         for (uint256 i = 0; i < numberOfWinners; i++) {
             reward = (uint256(rewards[i]) * currentBalance) / uint256(100);
             uint256 index = random() % tickets.length;

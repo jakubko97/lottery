@@ -2,7 +2,7 @@
   <v-container>
     <v-list class="text-center">
       <div class="headline">Closed Lotteries</div>
-      <LotteryList :archive="true" :projectData="projectData" />
+      <LotteryList :ethereumData="ethereumData != null ? ethereumData[0] : null" :archive="true" :projectData="projectData" />
     </v-list>
   </v-container>
 </template>
@@ -19,6 +19,7 @@ export default {
   },
   data() {
     return {
+      ethereumData: [],
       projectData: [],
       account: null,
       callResult: {
@@ -30,9 +31,11 @@ export default {
     };
   },
   created() {
+     this.$xapi.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=eur&ids=ethereum').then((result => {
+      this.ethereumData = result.data
+    }))
     this.$web3.eth.getAccounts().then((accounts) => {
       [this.account] = accounts;
-
       this.getClosedProjects();
     });
   },
@@ -53,6 +56,7 @@ export default {
                 projectInfo = projectData;
                 projectInfo.isLoading = false;
                 projectInfo.contract = projectInst;
+                projectInfo.ticketPrice = this.$web3.utils.fromWei(projectInfo.ticketPrice, "ether")
                 projectInfo.deadlineTime =
                   projectInfo.deadlineTime.toString() + "000";
                 projectInfo.lotteryDateCreated =
@@ -71,6 +75,7 @@ export default {
               .then((projectData) => {
                 projectInfo.players = projectData.lotteryPlayers;
                 projectInfo.tickets = projectData.lotteryTickets;
+                console.log(projectData)
               })
               .catch((e) => {
                 this.callResult.finished = true;

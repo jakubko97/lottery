@@ -1,7 +1,8 @@
 <template>
   <v-container>
     <v-list>
-      <LotteryList :projectData="projectData" />
+      <LotteryList :ethereumData="ethereumData != null ? ethereumData[0] : null" :projectData="projectData" />
+      <RecentTransactions/>
     </v-list>
   </v-container>
 </template>
@@ -10,25 +11,32 @@
 import createLottery from "../../../contracts/createLotteryInstance";
 import lottery from "../../../contracts/lotteryInstance";
 import LotteryList from "@/components/reusable/LotteryList";
+import RecentTransactions from "@/components/dashboard/RecentTransactions";
 
 export default {
   name: "HelloWorld",
   components: {
     LotteryList,
+    RecentTransactions
   },
   data: () => ({
     projectData: [],
     account: null,
+    ethereumData: null,
     callResult: { finished: true, authorized: false, error: null, info: null },
   }),
   mounted() {
     // this code snippet takes the account (wallet) that is currently active
   },
   created() {
+     this.$xapi.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=eur&ids=ethereum').then((result => {
+      this.ethereumData = result.data
+    }))
+
     this.$web3.eth.getAccounts().then((accounts) => {
       [this.account] = accounts;
     });
-
+    
     this.getProjects();
   },
   methods: {
@@ -38,7 +46,7 @@ export default {
     getProjects() {
       this.callResult.finished = false;
       createLottery.methods
-        .returnAllLotteries()
+        .returnOpenProjects()
         .call()
         .then((projects) => {
           projects.forEach((projectAddress) => {
@@ -51,6 +59,7 @@ export default {
                 projectInfo = projectData;
                 projectInfo.isLoading = false;
                 projectInfo.contract = projectInst;
+                projectInfo.ticketPrice = this.$web3.utils.fromWei(projectInfo.ticketPrice, "ether")
                 projectInfo.deadlineTime =
                   projectInfo.deadlineTime.toString() + "000";
                 projectInfo.lotteryDateCreated =

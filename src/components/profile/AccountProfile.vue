@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="justify-content: center; display: grid">
     <v-card class="mx-auto">
       <v-row>
         <v-col md="4">
@@ -17,7 +17,7 @@
         <v-col md="4">
           <v-card-title> Spent/Won </v-card-title>
           <v-card-subtitle v-if="profileInfo.rewardsWon">
-            {{ profileInfo.rewardsWon }} wei
+            {{ $web3.utils.fromWei(profileInfo.rewardsWon, "ether") }} eth
             <v-icon large color="green darken-2"> mdi-chevron-up </v-icon>
           </v-card-subtitle>
         </v-col>
@@ -35,7 +35,7 @@ export default {
   data() {
     return {
       account: null,
-      profileInfo: { participatedCount: "", rewardsWon: "" },
+      profileInfo: { participatedCount: "", rewardsWon: 0 },
     };
   },
   created() {
@@ -57,7 +57,7 @@ export default {
           .getTotalSpent(this.account)
           .call()
           .then((res) => {
-            this.profileInfo.rewardsWon = res;
+            this.profileInfo.rewardsWon = this.$web3.utils.fromWei(res, "ether");
           });
       });
     },

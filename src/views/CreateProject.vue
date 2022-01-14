@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="justify-content: center; display: grid">
     <v-card>
       <v-card-title>
         <span class="headline font-weight-bold mt-2 ml-4"
@@ -51,16 +51,14 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col md="12">
+          <v-col md="6">
             <v-switch
-              v-model="newProject.saleEnabled"
-              :label="`Aktivovať zľavy`"
+              v-model="newProject.limitTicketsEnabled"
+              :label="`Limit tickets per account`"
             ></v-switch>
           </v-col>
-        </v-row>
-        <v-row v-if="newProject.saleEnabled">
-          <v-col md="12">
-            <v-text-field value="5% pri kúpe 5 a viac tiketov"></v-text-field>
+            <v-col v-if="newProject.limitTicketsEnabled" md="6">
+            <v-text-field label="Limit" v-model="newProject.limitTickets"></v-text-field>
           </v-col>
         </v-row>
         <v-row>
@@ -119,7 +117,7 @@ export default {
       },
     ],
     newProject: {
-      saleEnabled: false,
+      limitTicketsEnabled: false,
       isLoading: false,
       rewards: { text: "1. miesto 70%, 2. miesto 30%", value: [70, 30] },
     },
@@ -144,9 +142,10 @@ export default {
           this.newProject.title,
           this.newProject.description,
           this.newProject.deadline,
-          this.newProject.ticketPrice,
+          this.$web3.utils.toWei(this.newProject.ticketPrice, "ether"),
           this.newProject.rewards.value.length,
-          this.newProject.rewards.value
+          this.newProject.rewards.value,
+          this.newProject.limitTickets,
         )
         .send({
           from: this.account,

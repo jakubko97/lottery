@@ -4,10 +4,10 @@
       dense
       v-for="lottery in projectData"
       :key="lottery.projectTitle"
-      style="justify-content: center; text-align: left; display: grid"
+      style="justify-content: center; display: grid"
     >
       <v-list-item-content>
-        <LotteryCard :archive="archive" :lottery="lottery" />
+        <LotteryCard :ethereumData="ethereumData" :archive="archive" :lottery="lottery" />
       </v-list-item-content>
     </v-list-item>
   </v-container>
@@ -22,6 +22,10 @@ export default {
     LotteryCard,
   },
   props: {
+    ethereumData: {
+      type: Object,
+      default: null,
+    },
     projectData: {
       type: Array,
       required: true,

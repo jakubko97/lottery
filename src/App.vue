@@ -20,7 +20,6 @@ export default {
       [this.account] = accounts;
     });
   },
-
   methods: {
     switchDrawer(val) {
       this.drawer = val;
