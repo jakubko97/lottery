@@ -19,7 +19,7 @@
         </div>
         <div>
           <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
-          Bank {{ $web3.utils.fromWei(lottery.currentAmount, "ether") }} ETH
+          Bank {{ getCurrentAmount() }} ETH
         </div>
         <div>
           <v-icon class="mr-2" color="primary">mdi-timer-sand</v-icon>
@@ -28,10 +28,6 @@
         <div class="subtitle">Description: {{ lottery.projectDesc }}</div>
 
         <v-divider class="ma-2 pa-2"></v-divider>
-
-        <v-row>
-          <v-col></v-col>
-        </v-row>
         <v-row>
           <v-col>
             <v-progress-circular
@@ -42,8 +38,7 @@
               color="primary"
               >{{ winProbability }} %</v-progress-circular
             >
-            <p>Entered {{ lottery.purchased }} ETH</p>
-            <p>Tickets bought {{ ticketsBought }}</p>
+            <span class="ml-4">{{ ticketsBought }} tickets bought with value of {{ lottery.purchased }} eth {{ getPurchasedEthCurrentPrice() }} </span>
           </v-col>
         </v-row>
 
@@ -56,8 +51,9 @@
               {{ index + 1 }}. prize
               <v-list-item-title>{{ wnr.address }}</v-list-item-title>
               <v-list-item-subtitle>
-                {{ $web3.utils.fromWei(wnr.reward, "ether"), }}
+                {{ fromWeiToEth(wnr.reward), }}
                 eth
+                ({{ parseFloat(ethData.current_price * fromWeiToEth(wnr.reward)).toFixed(2) }} €)
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
@@ -139,6 +135,7 @@ export default {
   data() {
     return {
       dialog: false,
+      ethData: null,
       lottery: { playersLength: 0, ticketsLength: 0 },
       account: null,
       winProbability: 0,
@@ -169,7 +166,9 @@ export default {
       }).catch(() => {});
     });
     this.lottery = this.$route.params.obj;
-    this.lottery.purchased = this.$web3.utils.fromWei(this.lottery.purchased, "ether").toString()
+    this.ethData = this.$route.params.ethData;
+    console.log(this.lottery)
+    this.lottery.purchased = parseFloat(this.$web3.utils.fromWei(this.lottery.purchased, "ether")).toFixed(4)
     this.lottery.contract.methods
       .revealWinners()
       .call()
@@ -207,6 +206,13 @@ export default {
     // },
   },
   methods: {
+    getPurchasedEthCurrentPrice(){
+      return parseFloat(this.ethData.current_price * this.lottery.purchased).toFixed(2) + '€'
+    },
+    getCurrentAmount(){
+      let amount = parseFloat(this.$web3.utils.fromWei(this.lottery.currentAmount, "ether"))
+      return amount.toFixed(4)
+    },
     showPayAmount(){
       return this.lottery.amount != null && this.lottery.amount > 0 ? this.$web3.utils.fromWei(this.calculateDiscountForTickets(), "ether") + 'eth' : ''
     },
@@ -219,7 +225,9 @@ export default {
     getDateFormat(uintDate) {
       return this.$utils.formatDate(new Date(+uintDate));
     },
-
+    fromWeiToEth(value){
+      return parseFloat(this.$web3.utils.fromWei(value, "ether")).toFixed(4)
+    },
     openDialog(item) {
       this.dialog = true;
       this.lottery = item;

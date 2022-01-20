@@ -1,7 +1,7 @@
 <template>
   <v-app-bar elevate-on-scroll color="blue darken-1" app>
     <!-- <v-app-bar-nav-icon @click.stop="switchDrawer" /> -->
-    <div class="headline">Blockchain Lottery</div>
+    <div class="headline">Smart Lottery</div>
     <template v-slot:extension>
       <v-tabs v-model="tab" centered dark>
         

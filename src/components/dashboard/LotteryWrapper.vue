@@ -14,7 +14,7 @@ import LotteryList from "@/components/reusable/LotteryList";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 
 export default {
-  name: "HelloWorld",
+  name: "LotteryWrapper",
   components: {
     LotteryList,
     RecentTransactions

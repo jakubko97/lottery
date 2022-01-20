@@ -159,10 +159,7 @@ export default {
             projectInfo.deadlineTime.toString() + "000";
           projectInfo.contract = lottery(projectInfo.contractAddress);
           //this.projectData.push(projectInfo);
-          this.$router.push({
-            path: "/",
-            params: { otherProp: { project: projectInfo } },
-          });
+          this.$router.go('/')
         })
         .catch(() => {
           this.newProject.isLoading = false;

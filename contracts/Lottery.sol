@@ -70,34 +70,72 @@ contract lotteryCreator {
         );
     }
 
+
+    struct participated {
+        address lotteryAddress;
+        uint value;
+        uint ticketsAmount;
+        State state;
+        bool won;
+        uint256 amountWon;
+    }
+    mapping(uint256 => participated) participatedList;
+
     function participatedByAddress(address _address)
-        external
-        view
-        returns (uint256)
+        public
+        returns (address[] memory, uint[] memory, uint[] memory, State[] memory, bool[] memory, uint256[] memory)
     {
-        uint256 count = 0;
+
+        uint256 participatedIndex = 0;
         for (uint256 i = 0; i < lotteries.length; i++) {
             Lottery ltr = lotteries[i];
             address[] memory players = ltr.getPlayers();
             for (uint256 j = 0; j < players.length; j++) {
                 if (players[j] == _address) {
-                    count++;
+                    participated storage par = participatedList[participatedIndex];
+                    par.lotteryAddress = ltr.getContractAddress();
+                    par.value = ltr.getContributed(_address);
+                    par.ticketsAmount = ltr.getEnteredTicketsByAccount(_address);
+                    par.state = ltr.getState();
+                    par.won = false;
+                    par.amountWon = 0;
+
+                    for(uint256 k = 0; k < ltr.getNumberOfWinners(); k++){
+                        if(_address == ltr.getWinner(k)){
+                            par.won = true;
+                            par.amountWon = ltr.getWinnerAmount(k);
+                        }
+                    }
+                    participatedIndex++;
                 }
             }
         }
-        return count;
+
+        address[] memory addrs = new address[](participatedIndex);
+        uint[]    memory funds = new uint[](participatedIndex);
+        uint[]    memory tickets = new uint[](participatedIndex);
+        State[]   memory states = new State[](participatedIndex);
+        bool[]    memory won = new bool[](participatedIndex);
+        uint256[] memory amountWon = new uint256[](participatedIndex);
+
+        for (uint i = 0; i < participatedIndex; i++) {
+            participated storage pa = participatedList[i];
+            addrs[i] = pa.lotteryAddress;
+            funds[i] = pa.value;
+            tickets[i] = pa.ticketsAmount;
+            states[i] = pa.state;
+            won[i] = pa.won;
+            amountWon[i] = pa.amountWon;
+        }
+
+        return (addrs, funds, tickets, states, won, amountWon);
     }
 
-    function getTotalSpent(address _address) external view returns (uint256) {
-        uint256 totalSpent = 0;
-        if(this.getRewardsWonByAddress(_address) > this.getSpentState(_address)){
-            totalSpent = this.getRewardsWonByAddress(_address) -
-            this.getSpentState(_address);
-        }else {
-            totalSpent = this.getSpentState(_address) - this.getRewardsWonByAddress(_address);
-        }
-        return totalSpent;
-    }
+    // function getTotalSpent(address _address) external view returns (uint256) {
+    //     uint256 totalSpent = 0;
+    //     totalSpent = this.getRewardsWonByAddress(_address) - this.getSpentState(_address);
+    //     return totalSpent;
+    // }
 
     function getSpentState(address _address) external view returns (uint256) {
         uint256 spent = 0;
@@ -177,6 +215,7 @@ contract Lottery {
     uint256 limitTickets;
 
     struct winner {
+        uint id;
         uint256 amount;
         address account;
     }
@@ -214,6 +253,8 @@ contract Lottery {
         limitTickets = lotteryLimitTickets;
     }
 
+
+
     function getRewardsByAccount(address _address)
         public
         view
@@ -229,12 +270,24 @@ contract Lottery {
         return rewardsWon;
     }
 
+    function getContractAddress() public view returns (address) {
+        return address(this);
+    }
+
     function getContributed(address _address) public view returns (uint256) {
-        return contributors[_address] * 1 ether;
+        return contributors[_address];
     }
 
     function getState() public view returns (State) {
         return state;
+    }
+
+    function getWinner(uint256 id) public view returns (address) {
+        return winners[id].account;
+    }
+
+    function getWinnerAmount(uint256 id) public view returns (uint256) {
+        return winners[id].amount;
     }
 
     function buyTicket(uint256 overralPrice, uint256 ticketAmount)
@@ -243,7 +296,9 @@ contract Lottery {
     {
         require(block.timestamp < deadline); // in the fundraising period
         require(overralPrice > 0);
-        require(limitTickets <= ticketAmount);
+
+        uint256 ticketsByAcc = this.getEnteredTicketsByAccount(msg.sender) + ticketAmount;
+        require(limitTickets >= ticketsByAcc);
 
         contributors[msg.sender] = contributors[msg.sender].add(overralPrice);
         currentBalance = currentBalance.add(overralPrice);
@@ -264,6 +319,10 @@ contract Lottery {
         }
 
         emit Transfer(msg.sender, overralPrice);
+    }
+
+    function getNumberOfWinners() public view returns (uint256) {
+        return numberOfWinners;
     }
 
     function getOwner() public view returns (address) {
@@ -298,6 +357,8 @@ contract Lottery {
     }
 
     function pickWinner() public payable restricted {
+        // po casovom limite, admin spusti losovanie a nasledne
+        // vyhodnotenie vyhercov
         require(block.timestamp > deadline);
 
         uint256 reward;

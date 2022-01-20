@@ -1,13 +1,19 @@
 <template>
-  <v-container>
+  <v-container class="text-center" style="justify-content: center; display: grid">
+    <v-card v-if="projectData.length == 0" elevation="0" class="rounded-lg" style="width: 450px" height="100">
+      <v-card-text class="headline"> NO {{ closedOpenLabel() }} LOTTERIES </v-card-text>
+    </v-card>
     <v-list-item
       dense
       v-for="lottery in projectData"
       :key="lottery.projectTitle"
-      style="justify-content: center; display: grid"
     >
       <v-list-item-content>
-        <LotteryCard :ethereumData="ethereumData" :archive="archive" :lottery="lottery" />
+        <LotteryCard
+          :ethereumData="ethereumData"
+          :archive="archive"
+          :lottery="lottery"
+        />
       </v-list-item-content>
     </v-list-item>
   </v-container>
@@ -17,7 +23,7 @@
 import LotteryCard from "@/components/reusable/LotteryCard";
 
 export default {
-  name: "HelloWorld",
+  name: "LotteryList",
   components: {
     LotteryCard,
   },
@@ -35,5 +41,10 @@ export default {
       default: false,
     },
   },
+  methods: {
+    closedOpenLabel(){
+      return this.archive ? 'CLOSED' : 'OPEN'
+    }
+  }
 };
 </script>

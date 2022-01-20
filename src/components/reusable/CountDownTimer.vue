@@ -21,7 +21,7 @@
 
 <script>
 export default {
-  name: "CountDownTImer",
+  name: "CountDownTimer",
 
   mounted() {
     window.setInterval(() => {

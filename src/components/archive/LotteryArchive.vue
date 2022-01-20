@@ -1,7 +1,6 @@
 <template>
   <v-container>
-    <v-list class="text-center">
-      <div class="headline">Closed Lotteries</div>
+    <v-list>
       <LotteryList :ethereumData="ethereumData != null ? ethereumData[0] : null" :archive="true" :projectData="projectData" />
     </v-list>
   </v-container>

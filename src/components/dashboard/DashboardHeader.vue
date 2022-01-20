@@ -23,7 +23,7 @@
 
 <script>
 export default {
-  name: "HelloWorld",
+  name: "DashboardHeader",
   methods: {
     createProject() {
       this.$router.push("/CreateProject");

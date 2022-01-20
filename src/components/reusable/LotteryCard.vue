@@ -116,6 +116,7 @@ export default {
         name: "LotteryDetail",
         params: {
           obj: { ...lottery },
+          ethData: { ...this.ethereumData}
         },
       });
     },
