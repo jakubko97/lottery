@@ -49,6 +49,12 @@
         <template #[`item.funds`]="{ item }">
         {{ parseFloat($web3.utils.fromWei(item.funds, "ether")).toFixed(5) }}
         </template>
+            <template #[`item.amountWon`]="{ item }">
+        {{ parseFloat($web3.utils.fromWei(item.amountWon, "ether")).toFixed(5) }}
+        </template>
+            <template #[`item.state`]="{ item }">
+        {{ getState(item.state) }}
+        </template>
       </v-data-table>
     </v-card>
   </div>
@@ -84,6 +90,24 @@ export default {
           sortable: true,
           value: "tickets",
         },
+        {
+          text: "State",
+          align: "start",
+          sortable: true,
+          value: "state",
+        },
+         {
+          text: "Won",
+          align: "start",
+          sortable: false,
+          value: "won",
+        },
+        {
+          text: "AmountWon",
+          align: "start",
+          sortable: true,
+          value: "amountWon",
+        }
       ],
       profileInfo: { lotteryParticipated: [], rewardsWon: 0 },
     };
@@ -92,6 +116,9 @@ export default {
     this.getData();
   },
   methods: {
+    getState(state) {
+      return state == 0 ? "Open" : "Closed"
+    },
     getData() {
       this.$web3.eth.getAccounts().then((accounts) => {
         [this.account] = accounts;
@@ -105,10 +132,17 @@ export default {
               let array = res[0];
               let array2 = res[1];
               let array3 = res[2];
+              let array4 = res[3];
+              let array5 = res[4];
+              let array6 = res[5];
+
               let participated = {};
               participated.address = array[i];
               participated.funds = array2[i];
               participated.tickets = array3[i];
+              participated.state = array4[i];
+              participated.won = array5[i];
+              participated.amountWon = array6[i];
               this.profileInfo.lotteryParticipated.push(participated);
               this.callResult.finished = true
             }

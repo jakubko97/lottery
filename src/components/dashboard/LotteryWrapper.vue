@@ -3,6 +3,7 @@
     <v-list>
       <LotteryList :ethereumData="ethereumData != null ? ethereumData[0] : null" :projectData="projectData" />
       <RecentTransactions/>
+      <RecentWinners/>
     </v-list>
   </v-container>
 </template>
@@ -12,12 +13,14 @@ import createLottery from "../../../contracts/createLotteryInstance";
 import lottery from "../../../contracts/lotteryInstance";
 import LotteryList from "@/components/reusable/LotteryList";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
+import RecentWinners from "@/components/dashboard/RecentWinners";
 
 export default {
   name: "LotteryWrapper",
   components: {
     LotteryList,
-    RecentTransactions
+    RecentTransactions,
+    RecentWinners
   },
   data: () => ({
     projectData: [],

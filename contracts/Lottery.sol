@@ -14,7 +14,7 @@ contract lotteryCreator {
 
     // List of existing projects
     Lottery[] private lotteries;
-    address payable superadmin;
+    address payable creator;
 
     // Event that will be emitted whenever a new project is started
     event ProjectStarted(
