@@ -2,8 +2,8 @@
   <v-container>
     <v-list>
       <LotteryList :ethereumData="ethereumData != null ? ethereumData[0] : null" :projectData="projectData" />
-      <RecentTransactions/>
-      <RecentWinners/>
+      <RecentTransactions class="ma-2"/>
+      <RecentWinners class="ma-2"/>
     </v-list>
   </v-container>
 </template>

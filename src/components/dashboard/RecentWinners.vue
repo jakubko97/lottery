@@ -1,22 +1,16 @@
 <template>
- <v-card>
-    <v-card-title>
-      Recent Winners
-      <v-spacer></v-spacer>
-      <v-text-field
-        v-model="search"
-        append-icon="mdi-magnify"
-        label="Search"
-        single-line
-        hide-details
-      ></v-text-field>
-    </v-card-title>
-    <v-data-table
-      :headers="headers"
-      :items="desserts"
-      :search="search"
-    ></v-data-table>
+<div> 
+  <div class="headline mb-4">Recent Winners</div>
+  <v-row>
+    <v-col v-for="winner in winners" :key="winner.account">
+       <v-card style="width:240px">
+    <v-card-title>{{ winner.account }}</v-card-title>
+    <v-card-subtitle>{{ winner.reward }}</v-card-subtitle>
+      
   </v-card>
+    </v-col>
+  </v-row>
+ </div>
 </template>
 
 <script>
@@ -25,99 +19,26 @@ export default {
   data(){
       return {
         search: '',
-        headers: [
+        winners: [
           {
-            text: 'Dessert (100g serving)',
-            align: 'start',
-            sortable: false,
-            value: 'name',
-          },
-          { text: 'Calories', value: 'calories' },
-          { text: 'Fat (g)', value: 'fat' },
-          { text: 'Carbs (g)', value: 'carbs' },
-          { text: 'Protein (g)', value: 'protein' },
-          { text: 'Iron (%)', value: 'iron' },
-        ], 
-        desserts: [
-          {
-            name: 'Frozen Yogurt',
-            calories: 159,
-            fat: 6.0,
-            carbs: 24,
-            protein: 4.0,
-            iron: '1%',
+            account: '0x998e00A168718f55Ac73b607c40b579Cc5F4DCEa',
+            reward: '1.5 eth',
           },
           {
-            name: 'Ice cream sandwich',
-            calories: 237,
-            fat: 9.0,
-            carbs: 37,
-            protein: 4.3,
-            iron: '1%',
+            account: '0xc1da6e594a55faAD15fe1E5fF5c8FbE5EAbdaE2b',
+            reward: '0.54 eth',
+          },
+         {
+            account: '0x74658B9eC4527c1Cf8602b6400FcEE1d2e78A901',
+            reward: '4.9 eth',
           },
           {
-            name: 'Eclair',
-            calories: 262,
-            fat: 16.0,
-            carbs: 23,
-            protein: 6.0,
-            iron: '7%',
+            account: '0xd13AEd7f6d9056588a8401765e19F3409493c9dB',
+            reward: '10 eth',
           },
-          {
-            name: 'Cupcake',
-            calories: 305,
-            fat: 3.7,
-            carbs: 67,
-            protein: 4.3,
-            iron: '8%',
-          },
-          {
-            name: 'Gingerbread',
-            calories: 356,
-            fat: 16.0,
-            carbs: 49,
-            protein: 3.9,
-            iron: '16%',
-          },
-          {
-            name: 'Jelly bean',
-            calories: 375,
-            fat: 0.0,
-            carbs: 94,
-            protein: 0.0,
-            iron: '0%',
-          },
-          {
-            name: 'Lollipop',
-            calories: 392,
-            fat: 0.2,
-            carbs: 98,
-            protein: 0,
-            iron: '2%',
-          },
-          {
-            name: 'Honeycomb',
-            calories: 408,
-            fat: 3.2,
-            carbs: 87,
-            protein: 6.5,
-            iron: '45%',
-          },
-          {
-            name: 'Donut',
-            calories: 452,
-            fat: 25.0,
-            carbs: 51,
-            protein: 4.9,
-            iron: '22%',
-          },
-          {
-            name: 'KitKat',
-            calories: 518,
-            fat: 26.0,
-            carbs: 65,
-            protein: 7,
-            iron: '6%',
+         {
+            account: '0x6D70623e64E2dBf79110aa6B046c781Eb73eDb42',
+            reward: '8.0333 eth',
           }
         ]
       }

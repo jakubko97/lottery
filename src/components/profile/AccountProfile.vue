@@ -9,7 +9,7 @@
           </v-card-subtitle>
         </v-col>
         <v-col md="6">
-          <v-card-title> Spent/Won </v-card-title>
+          <v-card-title> Balance </v-card-title>
           <v-card-subtitle v-if="profileInfo.rewardsWon">
             {{ profileInfo.rewardsWon }} eth
             <v-icon

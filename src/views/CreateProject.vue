@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title>
         <span class="headline font-weight-bold mt-2 ml-4"
-          >Bring your project to life</span
+          >Create Lottery</span
         >
       </v-card-title>
       <v-card-text class="pt-0">
@@ -36,7 +36,9 @@
             >
             </v-textarea>
           </v-col>
-          <v-col md="6" cols="12">
+        </v-row>
+        <v-row>
+            <v-col md="6" cols="12">
             <v-select
               v-model="newProject.rewards"
               :hint="`${newProject.rewards.value.length} vyhercovia`"
@@ -49,20 +51,13 @@
               single-line
             ></v-select>
           </v-col>
-        </v-row>
-        <v-row>
-          <v-col md="6">
-            <v-switch
-              v-model="newProject.limitTicketsEnabled"
-              :label="`Limit tickets per account`"
-            ></v-switch>
-          </v-col>
-            <v-col v-if="newProject.limitTicketsEnabled" md="6">
+            <v-col md="6">
             <v-text-field label="Limit" v-model="newProject.limitTickets"></v-text-field>
           </v-col>
         </v-row>
         <v-row>
           <v-col md="12">
+          <div class="title">Deadline</div>
             <v-date-picker
               class="mr-5"
               :min="nowDate"
