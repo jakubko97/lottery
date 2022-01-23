@@ -5,7 +5,7 @@
 - Import truffle-config.js file to Ganache new workspace.
 - Create new RPC network in Metamask with data from Ganache like http link, chain id (5777 or 1337)
 - Import test accounts with word phase to Metamask RPC test network.
-
+- Developed in Solidity with version ^0.7.0
 ## Project setup
 ```
 npm install
