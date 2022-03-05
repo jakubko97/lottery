@@ -30,8 +30,7 @@ export default {
       console.error(e)
       this.loadingAccounts = false
     })
-    console.log(bigChainDb.FarmToWork)
-    bigChainDb.FarmToWork.createAsset("a cow").then( response => console.log(response) );
+    // bigChainDb.FarmToWork.createAsset("a cow").then( response => console.log(response) );
   },
   methods: {
     handleAccountsChanged() {
