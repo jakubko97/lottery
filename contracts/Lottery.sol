@@ -363,8 +363,12 @@ contract Lottery {
 
         uint256 reward;
         currentBalance = address(this).balance;
+        // TODO
+        // vytvorit vypocet podielu vyhry s danym percentilom dani
+        // napr. 1. vyherca 70% odpocet 7% za daň
+        // 2. vyherca 30% odpocet 
         for (uint256 i = 0; i < numberOfWinners; i++) {
-            reward = (uint256(rewards[i]) * currentBalance) / uint256(100);
+            reward = ((uint256(rewards[i]) * currentBalance) / uint256(10000)) * uint256(93);
             uint256 index = random() % tickets.length;
             winner storage ltWinner = winners[i];
             ltWinner.account = tickets[index];
@@ -377,6 +381,8 @@ contract Lottery {
             }
             payable(ltWinner.account).transfer(reward);
         }
+        // reward for creator 5%
+        payable(creator).transfer(address(this).balance);
         _changeState(State.Closed);
     }
 

@@ -44,6 +44,7 @@
         :headers="headers"
         :items="profileInfo.lotteryParticipated"
         :search="search"
+        no-data-text="No Data"
         :loading="!callResult.finished"
       >
         <template #[`item.funds`]="{ item }">

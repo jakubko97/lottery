@@ -10,7 +10,7 @@ if (window.ethereum) {
   web3Provider = window.ethereum;
   try {
     // Request account access
-    window.ethereum.enable();
+    //window.ethereum.enable();
     
   } catch (error) {
     // User denied account access...
