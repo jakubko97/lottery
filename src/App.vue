@@ -1,14 +1,16 @@
 <template>
   <v-app id="fei_dp_lottery">
     <app-app-bar v-if="account" @switch-drawer="switchDrawer"></app-app-bar>
-    <app-app-page v-if="account && !loadingAccounts" :account="account"></app-app-page>
+    <app-app-page
+      v-if="account && !loadingAccounts"
+      :account="account"
+    ></app-app-page>
     <!-- <app-app-drawer :account="account" v-model="drawer"></app-app-drawer> -->
     <app-landing-page v-if="!account && !loadingAccounts"></app-landing-page>
   </v-app>
 </template>
 
 <script>
-import bigChainDb from '../db/Transaction'
 
 export default {
   name: "App",
@@ -16,20 +18,26 @@ export default {
   components: {},
 
   data() {
-    return { 
-      drawer: true, 
+    return {
+      drawer: true,
       account: "",
-      loadingAccounts : true };
+      loadingAccounts: true,
+    };
   },
   created() {
     window.ethereum.on("accountsChanged", this.handleAccountsChanged);
-    this.$web3.eth.getAccounts().then((accounts) => {
-      [this.account] = accounts;
-      this.loadingAccounts = false
-    }).catch(e => {
-      console.error(e)
-      this.loadingAccounts = false
-    })
+    this.$web3.eth
+      .getAccounts()
+      .then((accounts) => {
+        [this.account] = accounts;
+        this.loadingAccounts = false;
+      })
+      .catch((e) => {
+        console.error(e);
+        this.loadingAccounts = false;
+      });
+
+    console.log(this.$web3.eth)
     // bigChainDb.FarmToWork.createAsset("a cow").then( response => console.log(response) );
   },
   methods: {

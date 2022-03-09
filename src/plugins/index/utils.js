@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import i18n from '@/plugins/i18n'
 
-function formatDate (stringDate) {
+function formatDate(stringDate) {
   if (stringDate) {
     const date = new Date(stringDate)
     return date.toLocaleString([i18n.locale], { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -9,7 +9,7 @@ function formatDate (stringDate) {
     return ''
   }
 }
-function formatDateToTimer (stringDate) {
+function formatDateToTimer(stringDate) {
   if (stringDate) {
     const date = new Date(stringDate)
     var year = date.toLocaleString(['sk'], { year: 'numeric' })
@@ -29,9 +29,14 @@ function formatDateToTimer (stringDate) {
   }
 }
 
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 const utils = {
   formatDate: (stringDate) => formatDate(stringDate),
-   formatDateToTimer: (stringDate) => formatDateToTimer(stringDate)
+  formatDateToTimer: (stringDate) => formatDateToTimer(stringDate),
+  delay: (ms) => delay(ms)
 }
 
 export default utils
