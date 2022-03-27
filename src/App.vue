@@ -5,7 +5,6 @@
       v-if="account && !loadingAccounts"
       :account="account"
     ></app-app-page>
-    <!-- <app-app-drawer :account="account" v-model="drawer"></app-app-drawer> -->
     <app-landing-page v-if="!account && !loadingAccounts"></app-landing-page>
   </v-app>
 </template>
@@ -36,9 +35,6 @@ export default {
         console.error(e);
         this.loadingAccounts = false;
       });
-
-    console.log(this.$web3.eth)
-    // bigChainDb.FarmToWork.createAsset("a cow").then( response => console.log(response) );
   },
   methods: {
     handleAccountsChanged() {

@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.0;
-pragma experimental ABIEncoderV2;
 import "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 
 enum State {
@@ -179,22 +178,23 @@ contract lotteryCreator {
         return rewardsWon;
     }
 
-    event RevealLatestWinners(Winners[] _a);
+    // event RevealLatestWinners(Winners[] _a);
 
-    function getLatestWinners() external view returns (Winners[] memory) {
-        Lottery[] memory closedLotteries = this.returnClosedProjects();
+    // function getLatestWinners() external view returns (Winners[] memory) {
+    //     Lottery[] memory closedLotteries = this.returnClosedProjects();
 
-        Winners[] memory winners = new Winners[](closedLotteries.length);
-        if (closedLotteries.length != 0) {
-            for (uint256 i = 0; i < closedLotteries.length; i++) {
-                Lottery ltr = closedLotteries[i];
-                (uint256[] memory values, address[] memory accounts) = ltr.revealWinners();
-                winners[i].values = values;
-                winners[i].accounts = accounts;
-            }
-        }
-        return winners;
-    }
+    //     Winners[] memory winners = new Winners[](closedLotteries.length);
+    //     if (closedLotteries.length != 0) {
+    //         for (uint256 i = 0; i < closedLotteries.length; i++) {
+    //             Lottery ltr = closedLotteries[i];
+    //             (uint256[] memory values, address[] memory accounts) = ltr
+    //                 .revealWinners();
+    //             winners[i].values = values;
+    //             winners[i].accounts = accounts;
+    //         }
+    //     }
+    //     return winners;
+    // }
 
     function returnClosedProjects() external view returns (Lottery[] memory) {
         return this.getProjectsByState(State.Closed);
@@ -406,10 +406,6 @@ contract Lottery {
 
         uint256 reward;
         currentBalance = address(this).balance;
-        // TODO
-        // vytvorit vypocet podielu vyhry s danym percentilom dani
-        // napr. 1. vyherca 70% odpocet 7% za daň
-        // 2. vyherca 30% odpocet
         for (uint256 i = 0; i < numberOfWinners; i++) {
             reward =
                 ((uint256(rewards[i]) * currentBalance) / uint256(10000)) *

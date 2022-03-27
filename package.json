@@ -10,6 +10,8 @@
   "dependencies": {
     "@metamask/detect-provider": "^1.2.0",
     "@openzeppelin/contracts": "^3.1.0-solc-0.7",
+    "@truffle/hdwallet-provider": "^2.0.4",
+    "abi-decoder": "^2.4.0",
     "axios": "^0.24.0",
     "bigchaindb-driver": "^4.3.0",
     "bip39": "^3.0.4",
@@ -20,6 +22,7 @@
     "lodash": "^4.17.21",
     "openzeppelin-solidity": "^4.3.3",
     "truffle": "^5.4.29",
+    "truffle-hdwallet-provider": "^1.0.17",
     "vue": "^2.6.11",
     "vue-i18n": "^8.26.7",
     "vue-router": "^3.5.3",

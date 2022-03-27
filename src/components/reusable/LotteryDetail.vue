@@ -167,7 +167,6 @@ export default {
     });
     this.lottery = this.$route.params.obj;
     this.ethData = this.$route.params.ethData;
-    console.log(this.lottery)
     this.lottery.purchased = parseFloat(this.$web3.utils.fromWei(this.lottery.purchased, "ether")).toFixed(4)
     this.lottery.contract.methods
       .revealWinners()

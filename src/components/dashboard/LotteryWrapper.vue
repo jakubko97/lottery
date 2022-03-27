@@ -1,7 +1,19 @@
 <template>
   <v-container>
     <v-list>
+      <v-sheet
+        v-if="!callResult.finished"
+        :color="`grey lighten-2`"
+        class="pa-3"
+      >
+        <v-skeleton-loader
+          class="mx-auto"
+          max-width="300"
+          type="card"
+        ></v-skeleton-loader>
+      </v-sheet>
       <LotteryList
+        v-if="callResult.finished"
         :ethereumData="ethereumData != null ? ethereumData[0] : null"
         :projectData="projectData"
       />
@@ -18,6 +30,7 @@ import LotteryList from "@/components/reusable/LotteryList";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import RecentWinners from "@/components/dashboard/RecentWinners";
 
+import apiCalls from "../../services/index";
 export default {
   name: "LotteryWrapper",
   components: {
@@ -34,7 +47,7 @@ export default {
   mounted() {
     // this code snippet takes the account (wallet) that is currently active
   },
-  created() {
+  async created() {
     this.$xapi
       .get(
         "https://api.coingecko.com/api/v3/coins/markets?vs_currency=eur&ids=ethereum"
@@ -43,19 +56,16 @@ export default {
         this.ethereumData = result.data;
       });
 
-    this.$web3.eth.getAccounts().then((accounts) => {
+    await this.$web3.eth.getAccounts().then((accounts) => {
       [this.account] = accounts;
     });
 
     this.getProjects();
   },
   methods: {
-    updateDialog(val) {
-      this.lotteryDetailDialog = val;
-    },
-    getProjects() {
+    async getProjects() {
       this.callResult.finished = false;
-      createLottery.methods
+      await createLottery.methods
         .returnOpenProjects()
         .call()
         .then((projects) => {
@@ -100,9 +110,6 @@ export default {
         .catch((e) => {
           this.callResult.finished = true;
         });
-    },
-    createProject() {
-      this.$router.push("/CreateProject");
     },
   },
 };

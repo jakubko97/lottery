@@ -2,9 +2,7 @@
   <div style="justify-content: center; display: grid">
     <v-card>
       <v-card-title>
-        <span class="headline font-weight-bold mt-2 ml-4"
-          >Create Lottery</span
-        >
+        <span class="headline font-weight-bold mt-2 ml-4">Create Lottery</span>
       </v-card-title>
       <v-card-text class="pt-0">
         <v-row class="pt-0">
@@ -38,7 +36,7 @@
           </v-col>
         </v-row>
         <v-row>
-            <v-col md="6" cols="12">
+          <v-col md="6" cols="12">
             <v-select
               v-model="newProject.rewards"
               :hint="`${newProject.rewards.value.length} vyhercovia`"
@@ -51,13 +49,16 @@
               single-line
             ></v-select>
           </v-col>
-            <v-col md="6">
-            <v-text-field label="Limit" v-model="newProject.limitTickets"></v-text-field>
+          <v-col md="6">
+            <v-text-field
+              label="Limit"
+              v-model="newProject.limitTickets"
+            ></v-text-field>
           </v-col>
         </v-row>
         <v-row>
           <v-col md="12">
-          <div class="title">Deadline</div>
+            <div class="title">Deadline</div>
             <v-date-picker
               class="mr-5"
               :min="nowDate"
@@ -125,13 +126,13 @@ export default {
   },
   created() {},
   methods: {
-    startProject() {
+    async startProject() {
       this.newProject.deadline = new Date(
         this.date + "T" + this.time + ":00"
       ).getTime();
       this.newProject.deadline = this.newProject.deadline / 1000;
       this.newProject.isLoading = true;
-      createLottery.methods
+      await createLottery.methods
         .startProject(
           (this.newProject.owner = this.account),
           this.newProject.title,
@@ -140,7 +141,7 @@ export default {
           this.$web3.utils.toWei(this.newProject.ticketPrice, "ether"),
           this.newProject.rewards.value.length,
           this.newProject.rewards.value,
-          this.newProject.limitTickets,
+          this.newProject.limitTickets
         )
         .send({
           from: this.account,
@@ -154,7 +155,7 @@ export default {
             projectInfo.deadlineTime.toString() + "000";
           projectInfo.contract = lottery(projectInfo.contractAddress);
           //this.projectData.push(projectInfo);
-          this.$router.go('/')
+          this.$router.go("/");
         })
         .catch(() => {
           this.newProject.isLoading = false;

@@ -116,7 +116,6 @@ export default {
       });
     },
     startProject(newProject, dialog){
-      console.log('start project')
         newProject.isLoading = true;
       createLottery.methods.startProject(
         newProject.owner = this.account,
@@ -174,7 +173,6 @@ export default {
     },
     buyTicket(lottery) {
       if (this.amount != null) {
-        console.log(lottery)
         this.isLoading = true;
         lottery.contract.methods.buyTicket(this.amount).send(
           {

@@ -2,16 +2,16 @@
   <div>
     <div class="headline mb-4">Recent Winners</div>
     <v-fade-transition>
-    <v-row v-if="loadingState.finished">
-      <template v-for="lottery in lotteries">
-        <v-col v-for="winner in lottery" :key="winner.id">
-          <v-card style="width: 240px">
-            <v-card-title>{{ winner.value }} eth</v-card-title>
-            <v-card-subtitle>{{ winner.account }}</v-card-subtitle>
-          </v-card>
-        </v-col>
-      </template>
-    </v-row>
+      <v-row v-if="loadingState.finished">
+        <template v-for="lottery in lotteries">
+          <v-col v-for="winner in lottery" :key="winner.id">
+            <v-card style="width: 240px">
+              <v-card-title>{{ winner.value }} eth</v-card-title>
+              <v-card-subtitle>{{ winner.account }}</v-card-subtitle>
+            </v-card>
+          </v-col>
+        </template>
+      </v-row>
     </v-fade-transition>
     <v-sheet
       v-if="!loadingState.finished"
@@ -40,12 +40,12 @@ export default {
     };
   },
   created() {
-    this.loadData();
+    // this.loadData();
   },
   methods: {
-    loadData() {
+    async loadData() {
       this.loadingState.finished = false;
-      this.$utils.delay(1500).then(() => {
+      await this.$utils.delay(1500).then(() => {
         createLottery.methods
           .getLatestWinners()
           .call()
@@ -71,15 +71,11 @@ export default {
           })
           .catch((err) => {
             this.loadingState.error = err;
-            this.loadingState.finished = true;
           })
           .finally(() => {
             this.loadingState.finished = true;
           });
       });
-    },
-    createProject() {
-      this.$router.push("/CreateProject");
     },
   },
 };

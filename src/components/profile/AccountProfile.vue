@@ -148,8 +148,8 @@ export default {
               this.callResult.finished = true
             }
           })
-          .catch(() => {
-            this.callResult.finished = true
+          .catch((e) => {
+            console.log(e)
           })
           .finally(() => this.callResult.finished = true);
 

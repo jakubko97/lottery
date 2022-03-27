@@ -1,4 +1,7 @@
 /* eslint-disable */
+var HDWalletProvider = require('@truffle/hdwallet-provider');
+var mnemonic = 'install rather axis code nuclear kit morning climb advice table spell elegant';
+
 module.exports = {
   // Uncommenting the defaults below
   // provides for an easier quick-start with Ganache.
@@ -7,6 +10,12 @@ module.exports = {
   // for more details on how to specify configuration options!
   //
   networks: {
+    rinkeby: {
+      provider: function () {
+        return new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/v3/da3d173db8164055b25ad460fac26165');
+      },
+      network_id: 4
+    },
     development: {
       host: "127.0.0.1",
       port: 7545,
@@ -22,7 +31,7 @@ module.exports = {
       gasPrice: 25000000000
     }
   },
-    compilers: {
+  compilers: {
     solc: {
       version: "^0.7.0"
     }
@@ -39,13 +48,13 @@ module.exports = {
   // $ truffle migrate --reset --compile-all
   //
   // db: {
-    // enabled: false,
-    // host: "127.0.0.1",
-    // adapter: {
-    //   name: "sqlite",
-    //   settings: {
-    //     directory: ".db"
-    //   }
-    // }
+  // enabled: false,
+  // host: "127.0.0.1",
+  // adapter: {
+  //   name: "sqlite",
+  //   settings: {
+  //     directory: ".db"
+  //   }
+  // }
   // }
 };
