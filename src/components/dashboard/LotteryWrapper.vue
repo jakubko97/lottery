@@ -1,24 +1,17 @@
 <template>
   <v-container>
     <v-list>
-      <v-sheet
-        v-if="!callResult.finished"
-        :color="`grey lighten-2`"
-        class="pa-3"
-      >
-        <v-skeleton-loader
-          class="mx-auto"
-          max-width="300"
-          type="card"
-        ></v-skeleton-loader>
-      </v-sheet>
       <LotteryList
-        v-if="callResult.finished"
+        :call-result="callResult"
         :ethereumData="ethereumData != null ? ethereumData[0] : null"
         :projectData="projectData"
       />
       <RecentWinners class="ma-2" />
-      <RecentTransactions class="ma-2" />
+      <RecentTransactions
+        v-if="callResult.finished"
+        :project-addresses="projectAddresses"
+        class="ma-2"
+      />
     </v-list>
   </v-container>
 </template>
@@ -42,7 +35,8 @@ export default {
     projectData: [],
     account: null,
     ethereumData: null,
-    callResult: { finished: true, authorized: false, error: null, info: null },
+    projectAddresses: [],
+    callResult: { finished: false, error: "" },
   }),
   mounted() {
     // this code snippet takes the account (wallet) that is currently active
@@ -64,7 +58,15 @@ export default {
   },
   methods: {
     async getProjects() {
-      this.callResult.finished = false;
+      createLottery.methods
+        .returnAllLotteries()
+        .call()
+        .then((res) => {
+          this.projectAddresses = res;
+        })
+        .catch((e) => {})
+        .finally(() => {});
+
       await createLottery.methods
         .returnOpenProjects()
         .call()
@@ -89,9 +91,9 @@ export default {
                   projectInfo.lotteryDateCreated.toString() + "000";
 
                 this.projectData.push(projectInfo);
-                this.callResult.finished = true;
               })
-              .catch((e) => {
+              .catch((e) => {})
+              .finally(() => {
                 this.callResult.finished = true;
               });
 
@@ -102,12 +104,11 @@ export default {
                 projectInfo.players = projectData.lotteryPlayers;
                 projectInfo.tickets = projectData.lotteryTickets;
               })
-              .catch((e) => {
-                this.callResult.finished = true;
-              });
+              .catch((e) => {});
           });
         })
-        .catch((e) => {
+        .catch((e) => {})
+        .finally(() => {
           this.callResult.finished = true;
         });
     },

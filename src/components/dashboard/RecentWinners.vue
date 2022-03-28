@@ -1,30 +1,30 @@
 <template>
-  <div>
-    <div class="headline mb-4">Recent Winners</div>
-    <v-fade-transition>
-      <v-row v-if="loadingState.finished">
-        <template v-for="lottery in lotteries">
-          <v-col v-for="winner in lottery" :key="winner.id">
-            <v-card style="width: 240px">
-              <v-card-title>{{ winner.value }} eth</v-card-title>
-              <v-card-subtitle>{{ winner.account }}</v-card-subtitle>
-            </v-card>
-          </v-col>
-        </template>
-      </v-row>
-    </v-fade-transition>
-    <v-sheet
-      v-if="!loadingState.finished"
-      :color="`grey lighten-2`"
-      class="pa-3"
-    >
-      <v-skeleton-loader
-        class="mx-auto"
-        max-width="300"
-        type="list-item-two-line"
-      ></v-skeleton-loader>
-    </v-sheet>
-  </div>
+  <v-card>
+    <v-card-title> Recent Winners </v-card-title>
+    <v-card-text>
+      <v-fade-transition>
+        <v-row v-if="loadingState.finished">
+          <template v-for="lottery in lotteries">
+            <v-col v-for="winner in lottery" :key="winner.id">
+              <v-card elevation="0" style="min-width: 240px">
+                <v-card-title>{{ winner.value }} eth</v-card-title>
+                <v-card-subtitle>{{ winner.account }}</v-card-subtitle>
+              </v-card>
+            </v-col>
+          </template>
+        </v-row>
+      </v-fade-transition>
+      <v-sheet
+        v-if="!loadingState.finished"
+        :color="`grey lighten-2`"
+        class="pa-3"
+      >
+        <v-skeleton-loader
+          type="list-item-two-line"
+        ></v-skeleton-loader> </v-sheet
+    ></v-card-text>
+    <v-card-actions> </v-card-actions>
+  </v-card>
 </template>
 
 <script>
@@ -40,7 +40,7 @@ export default {
     };
   },
   created() {
-    // this.loadData();
+    this.loadData();
   },
   methods: {
     async loadData() {

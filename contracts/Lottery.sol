@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.0;
 import "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+pragma experimental ABIEncoderV2;
 
 enum State {
     Open,
@@ -178,23 +179,23 @@ contract lotteryCreator {
         return rewardsWon;
     }
 
-    // event RevealLatestWinners(Winners[] _a);
+    event RevealLatestWinners(Winners[] _a);
 
-    // function getLatestWinners() external view returns (Winners[] memory) {
-    //     Lottery[] memory closedLotteries = this.returnClosedProjects();
+    function getLatestWinners() external view returns (Winners[] memory) {
+        Lottery[] memory closedLotteries = this.returnClosedProjects();
 
-    //     Winners[] memory winners = new Winners[](closedLotteries.length);
-    //     if (closedLotteries.length != 0) {
-    //         for (uint256 i = 0; i < closedLotteries.length; i++) {
-    //             Lottery ltr = closedLotteries[i];
-    //             (uint256[] memory values, address[] memory accounts) = ltr
-    //                 .revealWinners();
-    //             winners[i].values = values;
-    //             winners[i].accounts = accounts;
-    //         }
-    //     }
-    //     return winners;
-    // }
+        Winners[] memory winners = new Winners[](closedLotteries.length);
+        if (closedLotteries.length != 0) {
+            for (uint256 i = 0; i < closedLotteries.length; i++) {
+                Lottery ltr = closedLotteries[i];
+                (uint256[] memory values, address[] memory accounts) = ltr
+                    .revealWinners();
+                winners[i].values = values;
+                winners[i].accounts = accounts;
+            }
+        }
+        return winners;
+    }
 
     function returnClosedProjects() external view returns (Lottery[] memory) {
         return this.getProjectsByState(State.Closed);

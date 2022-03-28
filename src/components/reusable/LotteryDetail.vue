@@ -15,7 +15,7 @@
         </div>
         <div>
           <v-icon class="mr-2" color="primary">mdi-account-multiple</v-icon>
-          {{ numberOfPlayers }} Players 
+          {{ numberOfPlayers }} Players
         </div>
         <div>
           <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
@@ -38,7 +38,10 @@
               color="primary"
               >{{ winProbability }} %</v-progress-circular
             >
-            <span class="ml-4">{{ ticketsBought }} tickets bought with value of {{ lottery.purchased }} eth {{ getPurchasedEthCurrentPrice() }} </span>
+            <span class="ml-4"
+              >{{ ticketsBought }} tickets bought with value of
+              {{ lottery.purchased }} eth {{ getPurchasedEthCurrentPrice() }}
+            </span>
           </v-col>
         </v-row>
 
@@ -52,8 +55,12 @@
               <v-list-item-title>{{ wnr.address }}</v-list-item-title>
               <v-list-item-subtitle>
                 {{ fromWeiToEth(wnr.reward), }}
-                eth
-                ({{ parseFloat(ethData.current_price * fromWeiToEth(wnr.reward)).toFixed(2) }} €)
+                eth ({{
+                  parseFloat(
+                    ethData.current_price * fromWeiToEth(wnr.reward)
+                  ).toFixed(2)
+                }}
+                €)
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
@@ -83,7 +90,12 @@
           </v-tooltip>
         </p>
 
-        <p class="title" v-if="winners.length == 0 && lottery.deadlineTime < new Date().getTime()">
+        <p
+          class="title"
+          v-if="
+            winners.length == 0 && lottery.deadlineTime < new Date().getTime()
+          "
+        >
           Lottery has ended. Waiting for winners.
         </p>
 
@@ -108,8 +120,13 @@
             >
           </v-col>
         </v-row>
-        <v-row v-if="winners.length == 0 &&  lottery.deadlineTime < new Date().getTime() &&
-                lottery.projectStarter == account">
+        <v-row
+          v-if="
+            winners.length == 0 &&
+            lottery.deadlineTime < new Date().getTime() &&
+            lottery.projectStarter == account
+          "
+        >
           <v-col>
             <v-btn
               depressed
@@ -122,15 +139,22 @@
         </v-row>
       </v-card-text>
     </v-card>
+    <RecentTransactions
+      class="my-2"
+      :project-addresses="[lottery.contract._address]"
+    />
   </div>
 </template>
 
 <script>
 import CountDownTimer from "./CountDownTimer.vue";
+import RecentTransactions from "@/components/dashboard/RecentTransactions.vue";
+
 export default {
   name: "LotteryDetail",
   components: {
     CountDownTimer,
+    RecentTransactions,
   },
   data() {
     return {
@@ -143,7 +167,7 @@ export default {
       winners: [],
       winner: {},
       rules: {
-        amount: [(val) => val > 10 || `Max is 10 tickets per account!`]
+        amount: [(val) => val > 10 || `Max is 10 tickets per account!`],
       },
     };
   },
@@ -155,34 +179,9 @@ export default {
     // this code snippet takes the account (wallet) that is currently active
   },
   created() {
-    this.$web3.eth.getAccounts().then((accounts) => {
-      [this.account] = accounts;
-      this.lottery.contract.methods.getWinProbabiltyByAccount(this.account).call().then((result) => {
-        this.winProbability = result / 100
-      }).catch(() => {});
-
-       this.lottery.contract.methods.getEnteredTicketsByAccount(this.account).call().then((result) => {
-        this.ticketsBought = result
-      }).catch(() => {});
-    });
     this.lottery = this.$route.params.obj;
     this.ethData = this.$route.params.ethData;
-    this.lottery.purchased = parseFloat(this.$web3.utils.fromWei(this.lottery.purchased, "ether")).toFixed(4)
-    this.lottery.contract.methods
-      .revealWinners()
-      .call()
-      .then((res) => {
-        for (let i = 0; i < res[0].length; i++) {
-          this.winner = {};
-          let array = res[0];
-          let array2 = res[1];
-
-          this.winner.reward = array[i];
-          this.winner.address = array2[i];
-          this.winners.push(this.winner);
-        }
-      })
-      .catch(() => {});
+    this.loadData();
   },
   computed: {
     numberOfPlayers: function () {
@@ -205,18 +204,67 @@ export default {
     // },
   },
   methods: {
-    getPurchasedEthCurrentPrice(){
-      return parseFloat(this.ethData.current_price * this.lottery.purchased).toFixed(2) + '€'
+    async loadData() {
+      this.$web3.eth.getAccounts().then((accounts) => {
+        [this.account] = accounts;
+        this.lottery.contract.methods
+          .getWinProbabiltyByAccount(this.account)
+          .call()
+          .then((result) => {
+            this.winProbability = result / 100;
+          })
+          .catch(() => {});
+
+        this.lottery.contract.methods
+          .getEnteredTicketsByAccount(this.account)
+          .call()
+          .then((result) => {
+            this.ticketsBought = result;
+          })
+          .catch(() => {});
+      });
+      this.lottery.purchased = parseFloat(
+        this.$web3.utils.fromWei(this.lottery.purchased, "ether")
+      ).toFixed(4);
+      this.lottery.contract.methods
+        .revealWinners()
+        .call()
+        .then((res) => {
+          for (let i = 0; i < res[0].length; i++) {
+            this.winner = {};
+            let array = res[0];
+            let array2 = res[1];
+
+            this.winner.reward = array[i];
+            this.winner.address = array2[i];
+            this.winners.push(this.winner);
+          }
+        })
+        .catch(() => {});
     },
-    getCurrentAmount(){
-      let amount = parseFloat(this.$web3.utils.fromWei(this.lottery.currentAmount, "ether"))
-      return amount.toFixed(4)
+    getPurchasedEthCurrentPrice() {
+      return (
+        parseFloat(this.ethData.current_price * this.lottery.purchased).toFixed(
+          2
+        ) + "€"
+      );
     },
-    showPayAmount(){
-      return this.lottery.amount != null && this.lottery.amount > 0 ? this.$web3.utils.fromWei(this.calculateDiscountForTickets(), "ether") + 'eth' : ''
+    getCurrentAmount() {
+      let amount = parseFloat(
+        this.$web3.utils.fromWei(this.lottery.currentAmount, "ether")
+      );
+      return amount.toFixed(4);
+    },
+    showPayAmount() {
+      return this.lottery.amount != null && this.lottery.amount > 0
+        ? this.$web3.utils.fromWei(
+            this.calculateDiscountForTickets(),
+            "ether"
+          ) + "eth"
+        : "";
     },
     ticketAmountChange() {
-      return this.lottery.amount
+      return this.lottery.amount;
     },
     formatDateToTimer(uintDate) {
       return this.$utils.formatDateToTimer(new Date(+uintDate));
@@ -224,8 +272,8 @@ export default {
     getDateFormat(uintDate) {
       return this.$utils.formatDate(new Date(+uintDate));
     },
-    fromWeiToEth(value){
-      return parseFloat(this.$web3.utils.fromWei(value, "ether")).toFixed(4)
+    fromWeiToEth(value) {
+      return parseFloat(this.$web3.utils.fromWei(value, "ether")).toFixed(4);
     },
     openDialog(item) {
       this.dialog = true;
@@ -235,10 +283,12 @@ export default {
       this.dialog = false;
     },
     calculateDiscountForTickets() {
-      const ticketAmount = this.lottery.amount
-       let overralPrice =
-          ticketAmount * this.lottery.ticketPrice;
-      let ticketPrice = this.$web3.utils.toWei(overralPrice.toString(), "ether");
+      const ticketAmount = this.lottery.amount;
+      let overralPrice = ticketAmount * this.lottery.ticketPrice;
+      let ticketPrice = this.$web3.utils.toWei(
+        overralPrice.toString(),
+        "ether"
+      );
       if (ticketAmount >= 2) {
         ticketPrice -= ticketPrice * (ticketAmount / 40);
       }
@@ -247,7 +297,7 @@ export default {
     buyTicket() {
       if (this.lottery.amount != null) {
         this.lottery.isLoading = true;
-        const overralPrice = this.calculateDiscountForTickets()
+        const overralPrice = this.calculateDiscountForTickets();
         this.lottery.contract.methods
           .buyTicket(overralPrice, this.lottery.amount)
           .send({

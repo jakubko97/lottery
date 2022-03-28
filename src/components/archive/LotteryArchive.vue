@@ -2,8 +2,9 @@
   <v-container>
     <v-list>
       <LotteryList
+        :call-result="callResult"
         :ethereumData="ethereumData != null ? ethereumData[0] : null"
-        :archive="true"
+        archive
         :projectData="projectData"
       />
     </v-list>
@@ -27,10 +28,8 @@ export default {
       projectData: [],
       account: null,
       callResult: {
-        finished: true,
-        authorized: false,
+        finished: false,
         error: null,
-        info: null,
       },
     };
   },
@@ -53,7 +52,6 @@ export default {
       });
     },
     getClosedProjects() {
-      this.callResult.finished = false;
       createLottery.methods
         .returnClosedProjects()
         .call()
@@ -78,9 +76,9 @@ export default {
                   projectInfo.lotteryDateCreated.toString() + "000";
 
                 this.projectData.push(projectInfo);
-                this.callResult.finished = true;
               })
-              .catch((e) => {
+              .catch((e) => {})
+              .finally(() => {
                 this.callResult.finished = true;
               });
 
@@ -91,12 +89,11 @@ export default {
                 projectInfo.players = projectData.lotteryPlayers;
                 projectInfo.tickets = projectData.lotteryTickets;
               })
-              .catch((e) => {
-                this.callResult.finished = true;
-              });
+              .catch((e) => {});
           });
         })
-        .catch((e) => {
+        .catch((e) => {})
+        .finally(() => {
           this.callResult.finished = true;
         });
     },

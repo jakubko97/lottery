@@ -1,20 +1,28 @@
 <template>
-  <v-container class="text-center" style="justify-content: center; display: grid">
-    <v-card v-if="projectData.length == 0" elevation="0" class="rounded-lg" style="width: 450px" height="100">
-      <v-card-text class="headline"> NO {{ closedOpenLabel() }} LOTTERIES </v-card-text>
-    </v-card>
+  <v-container
+    class="text-center"
+    style="justify-content: center; display: grid"
+  >
     <v-row>
-    <v-col
-      dense
-      v-for="lottery in projectData"
-      :key="lottery.projectTitle"
-    >
-        <LotteryCard
-          :ethereumData="ethereumData"
-          :archive="archive"
-          :lottery="lottery"
-        />
-    </v-col>
+      <v-fade-transition>
+        <v-col dense v-for="lottery in projectData" :key="lottery.projectTitle">
+          <LotteryCard
+            :ethereumData="ethereumData"
+            :archive="archive"
+            :lottery="lottery"
+          />
+        </v-col>
+        <div v-if="callResult.finished && projectData.length == 0">
+          NO {{ closedOpenLabel() }} LOTTERIES
+        </div>
+      </v-fade-transition>
+      <v-sheet
+        v-if="!callResult.finished"
+        :color="`grey lighten-2`"
+        class="pa-3"
+      >
+        <v-skeleton-loader type="card"></v-skeleton-loader>
+      </v-sheet>
     </v-row>
   </v-container>
 </template>
@@ -40,11 +48,15 @@ export default {
       type: Boolean,
       default: false,
     },
+    callResult: {
+      type: Object,
+      required: true,
+    },
   },
   methods: {
-    closedOpenLabel(){
-      return this.archive ? 'CLOSED' : 'OPEN'
-    }
-  }
+    closedOpenLabel() {
+      return this.archive ? "CLOSED" : "OPEN";
+    },
+  },
 };
 </script>

@@ -12,7 +12,7 @@ async function getBalanceByAccount(account) {
         })
 }
 
-async function getTransactionsByAccount(account) {
+async function getTransactionsByAccount(account, page, offset) {
     return await xapi
         .get("", {
             params: {
@@ -20,10 +20,10 @@ async function getTransactionsByAccount(account) {
                 action: "txlist",
                 address: account,
                 startblock: 0,
-                endblock: 99999999,
-                page: 1,
-                offset: 10,
-                sort: 'asc'
+                endblock: 'latest',
+                page: page,
+                offset: offset,
+                sort: 'desc'
             },
         })
 }
@@ -41,12 +41,26 @@ async function getTransactionsByBlockRange() {
                 sort: 'asc'
             },
         })
+}
+
+
+async function getTransactionCountByAccount(account) {
+    return await xapi
+        .get("", {
+            params: {
+                module: "proxy",
+                action: "eth_getTransactionCount",
+                address: account,
+                endblock: 'latest',
+            },
+        })
 
 }
 
 const apiCalls = {
     getBalanceByAccount: (account) => getBalanceByAccount(account),
-    getTransactionsByAccount: (account) => getTransactionsByAccount(account),
+    getTransactionCountByAccount: (account) => getTransactionCountByAccount(account),
+    getTransactionsByAccount: (account, page, offset) => getTransactionsByAccount(account, page, offset),
     getTransactionsByBlockRange: () => getTransactionsByBlockRange()
 
 }

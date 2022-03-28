@@ -149,7 +149,7 @@ export default {
             }
           })
           .catch((e) => {
-            console.log(e)
+            this.callResult.error = e
           })
           .finally(() => this.callResult.finished = true);
 

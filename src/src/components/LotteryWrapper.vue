@@ -106,7 +106,6 @@ export default {
         projects.forEach((projectAddress) => {
           const projectInst = lottery(projectAddress);
           projectInst.methods.getDetails().call().then((projectData) => {
-            console.log(projectData)
             const projectInfo = projectData;
             projectInfo.isLoading = false;
             projectInfo.contract = projectInst;
@@ -128,7 +127,6 @@ export default {
       }).then((res) => {
         newProject.isLoading = false
         dialog = false
-        console.log(res)
         const projectInfo = res.events.ProjectStarted.returnValues;
         projectInfo.isLoading = false;
         projectInfo.currentAmount = 0;
