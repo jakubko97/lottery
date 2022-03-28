@@ -210,8 +210,15 @@ contract lotteryCreator {
         view
         returns (Lottery[] memory)
     {
-        Lottery[] memory ltrs = new Lottery[](lotteries.length);
         uint256 count = 0;
+        for (uint256 i = 0; i < lotteries.length; i++) {
+            Lottery ltr = lotteries[i];
+            if (ltr.getState() == state) {
+                count++;
+            }
+        }
+        Lottery[] memory ltrs = new Lottery[](count);
+        count = 0;
         for (uint256 i = 0; i < lotteries.length; i++) {
             Lottery ltr = lotteries[i];
             if (ltr.getState() == state) {
