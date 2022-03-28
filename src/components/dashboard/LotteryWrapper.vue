@@ -63,6 +63,7 @@ export default {
         .call()
         .then((res) => {
           this.projectAddresses = res;
+          console.log(res);
         })
         .catch((e) => {})
         .finally(() => {});
@@ -92,7 +93,9 @@ export default {
 
                 this.projectData.push(projectInfo);
               })
-              .catch((e) => {})
+              .catch((e) => {
+                console.log(e);
+              })
               .finally(() => {
                 this.callResult.finished = true;
               });
@@ -107,7 +110,9 @@ export default {
               .catch((e) => {});
           });
         })
-        .catch((e) => {})
+        .catch((e) => {
+          console.log(e);
+        })
         .finally(() => {
           this.callResult.finished = true;
         });

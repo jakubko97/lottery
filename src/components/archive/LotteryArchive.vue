@@ -28,7 +28,7 @@ export default {
       projectData: [],
       account: null,
       callResult: {
-        finished: false,
+        loading: false,
         error: null,
       },
     };
@@ -52,6 +52,7 @@ export default {
       });
     },
     getClosedProjects() {
+      this.callResult.loading = true;
       createLottery.methods
         .returnClosedProjects()
         .call()
@@ -79,7 +80,7 @@ export default {
               })
               .catch((e) => {})
               .finally(() => {
-                this.callResult.finished = true;
+                this.callResult.loading = false;
               });
 
             projectInst.methods
@@ -94,7 +95,7 @@ export default {
         })
         .catch((e) => {})
         .finally(() => {
-          this.callResult.finished = true;
+          this.callResult.loading = false;
         });
     },
   },

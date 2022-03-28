@@ -21,6 +21,7 @@
       :page.sync="page"
       :items-per-page="offset"
       hide-default-footer
+      no-data-text="No transactions found"
     >
       <template #[`header.age`]="{ header }">
         <v-tooltip top>
@@ -87,6 +88,7 @@
       </template>
     </v-data-table>
     <v-pagination
+      color="accent"
       @input="updatePage"
       v-model="page"
       :length="pageCount"

@@ -114,7 +114,7 @@
               v-if="lottery.deadlineTime > new Date().getTime()"
               depressed
               color="primary"
-              :loading="lottery.isLoading"
+              :loading="callResult.loading"
               @click.prevent="buyTicket()"
               >{{ showPayAmount() }} Pay</v-btn
             >
@@ -131,7 +131,7 @@
             <v-btn
               depressed
               color="primary"
-              :loading="lottery.isLoading"
+              :loading="callResult.loading"
               @click.prevent="pickWinner()"
               >Pick Winner</v-btn
             >
@@ -164,6 +164,7 @@ export default {
       account: null,
       winProbability: 0,
       ticketsBought: 0,
+      callResult: { loading: false, error: "" },
       winners: [],
       winner: {},
       rules: {
@@ -296,7 +297,7 @@ export default {
     },
     buyTicket() {
       if (this.lottery.amount != null) {
-        this.lottery.isLoading = true;
+        this.callResult.loading = true;
         const overralPrice = this.calculateDiscountForTickets();
         this.lottery.contract.methods
           .buyTicket(overralPrice, this.lottery.amount)
@@ -306,25 +307,28 @@ export default {
             value: overralPrice,
           })
           .then((res) => {
-            this.lottery.isLoading = false;
+            console.log(res.data);
           })
-          .catch(() => {
-            this.lottery.isLoading = false;
+          .catch(() => {})
+          .finally(() => {
+            this.callResult.loading = false;
           });
       }
     },
 
     pickWinner() {
+      this.callResult.loading = true;
       this.lottery.contract.methods
         .pickWinner()
         .send({
           from: this.account,
         })
         .then((res) => {
-          this.lottery.isLoading = false;
+          console.log(res.data);
         })
-        .catch(() => {
-          this.lottery.isLoading = false;
+        .catch(() => {})
+        .finally(() => {
+          this.callResult.loading = false;
         });
     },
   },

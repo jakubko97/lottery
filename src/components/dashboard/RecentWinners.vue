@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <v-card-title> Recent Winners </v-card-title>
+    <v-card-title>Recent Winners </v-card-title>
     <v-card-text>
       <v-fade-transition>
         <v-row v-if="loadingState.finished">
