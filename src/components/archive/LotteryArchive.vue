@@ -1,13 +1,11 @@
 <template>
   <v-container>
-    <v-list>
-      <LotteryList
-        :call-result="callResult"
-        :ethereumData="ethereumData != null ? ethereumData[0] : null"
-        archive
-        :projectData="projectData"
-      />
-    </v-list>
+    <LotteryList
+      :call-result="callResult"
+      :ethereumData="ethereumData != null ? ethereumData[0] : null"
+      archive
+      :projectData="projectData"
+    />
   </v-container>
 </template>
 
@@ -15,7 +13,6 @@
 import LotteryList from "@/components/reusable/LotteryList";
 import lottery from "../../../contracts/lotteryInstance";
 import createLottery from "../../../contracts/createLotteryInstance";
-import apiCalls from "../../services/index";
 
 export default {
   name: "LotteryArchive",

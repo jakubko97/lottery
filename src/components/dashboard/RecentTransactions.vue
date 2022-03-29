@@ -22,6 +22,7 @@
       :items-per-page="offset"
       hide-default-footer
       no-data-text="No transactions found"
+      loading-text="Loading transactions. Please wait."
     >
       <template #[`header.age`]="{ header }">
         <v-tooltip top>
@@ -195,7 +196,7 @@ export default {
     async getAllTransactions() {
       this.transactions = [];
       this.loading = true;
-      Array.from(this.projectAddresses, (address) => {
+      await Array.from(this.projectAddresses, (address) => {
         apiCalls
           .getTransactionsByAccount(address, this.page, this.offset)
           .then((res) => {
@@ -209,9 +210,12 @@ export default {
                 item.tickets = decodedData.params[1].value;
               }
             });
+          })
+          .catch((e) => {})
+          .finally(() => {
+            this.loading = false;
           });
       });
-      this.loading = false;
     },
     createProject() {
       this.$router.push("/CreateProject");
