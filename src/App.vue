@@ -29,12 +29,13 @@ export default {
       .getAccounts()
       .then((accounts) => {
         [this.account] = accounts;
-        this.loadingAccounts = false;
       })
       .catch((e) => {
         console.error(e);
+      })
+      .finally(() => {
         this.loadingAccounts = false;
-      });
+      })
   },
   methods: {
     handleAccountsChanged() {
