@@ -21,8 +21,6 @@ async function getTransactionsByAccount(account, page, offset) {
                 address: account,
                 startblock: 0,
                 endblock: 'latest',
-                page: page,
-                offset: offset,
                 sort: 'desc'
             },
         })

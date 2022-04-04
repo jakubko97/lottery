@@ -17,13 +17,9 @@ Vue.config.productionTip = false;
 import detectEthereumProvider from '@metamask/detect-provider';
 
 // this returns the provider, or null if it wasn't detected
-const provider = detectEthereumProvider();
+// const provider = detectEthereumProvider();
 
-if (provider) {
-  startApp(provider); // Initialize your app
-} else {
-  console.log('Please install MetaMask!');
-}
+// startApp(provider); // Initialize your app
 
 function startApp(provider) {
   // If the provider returned by detectEthereumProvider is not the same as
@@ -39,4 +35,11 @@ function startApp(provider) {
     render: (h) => h(App, { props: { web3 } }),
   }).$mount('#app');
 }
+
+new Vue({
+  vuetify,
+  router,
+  i18n,
+  render: (h) => h(App),
+}).$mount('#app');
 

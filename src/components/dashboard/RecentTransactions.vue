@@ -8,6 +8,8 @@
         append-icon="mdi-magnify"
         label="Search"
         single-line
+        outlined
+        dense
         hide-details
       ></v-text-field>
     </v-card-title>
@@ -20,7 +22,6 @@
       :sort-desc.sync="sortDesc"
       :page.sync="page"
       :items-per-page="offset"
-      hide-default-footer
       no-data-text="No transactions found"
       loading-text="Loading transactions. Please wait."
     >
@@ -88,12 +89,12 @@
         {{ dateTimeFormat ? item.dateTime : dateInMilliseconds(item.age) }}
       </template>
     </v-data-table>
-    <v-pagination
+    <!-- <v-pagination
       color="accent"
       @input="updatePage"
       v-model="page"
       :length="pageCount"
-    ></v-pagination>
+    ></v-pagination> -->
   </v-card>
 </template>
 

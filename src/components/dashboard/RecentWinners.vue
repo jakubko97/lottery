@@ -45,7 +45,7 @@ export default {
   methods: {
     async loadData() {
       this.loadingState.finished = false;
-      await this.$utils.delay(1500).then(() => {
+      await this.$utils.delay(200).then(() => {
         createLottery.methods
           .getLatestWinners()
           .call()
