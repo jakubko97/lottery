@@ -17,8 +17,8 @@
 </template>
 
 <script>
-import createLottery from "../../../contracts/createLotteryInstance";
-import lottery from "../../../contracts/lotteryInstance";
+import createLottery from "../../../contracts/BuildLotteryInstance";
+import lottery from "../../../contracts/LotteryInstance";
 import LotteryList from "@/components/reusable/LotteryList";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import RecentWinners from "@/components/dashboard/RecentWinners";

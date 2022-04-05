@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import createLottery from "../../../contracts/createLotteryInstance";
+import createLottery from "../../../contracts/BuildLotteryInstance";
 
 export default {
   name: "RecentWinners",

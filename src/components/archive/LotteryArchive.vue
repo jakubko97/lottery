@@ -11,8 +11,8 @@
 
 <script>
 import LotteryList from "@/components/reusable/LotteryList";
-import lottery from "../../../contracts/lotteryInstance";
-import createLottery from "../../../contracts/createLotteryInstance";
+import lottery from "../../../contracts/LotteryInstance";
+import createLottery from "../../../contracts/BuildLotteryInstance";
 
 export default {
   name: "LotteryArchive",

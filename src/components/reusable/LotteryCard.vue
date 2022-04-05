@@ -4,7 +4,7 @@
     style="width: 450px"
     color="blue lighten-1"
     elevation="0"
-    height="260"
+    height="300"
   >
     <v-card-title class="white--text subtitle-2">{{
       lottery.projectTitle
@@ -18,7 +18,11 @@
           ><br>
           <span class="subtitle-1 white--text">
             {{  calculateEthPrice()  }}
+            </span><br>
+              <span class="subtitle-1 white--text">
+            {{ lottery.lotteryRewards.length }} winners
             </span>
+           
           </v-col>
       </v-row>
 

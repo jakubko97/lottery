@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
-const lotteryCreator = artifacts.require("lotteryCreator");
+const LotteryBuilder = artifacts.require("LotteryBuilder");
 
 module.exports = function(deployer) {
-  deployer.deploy(lotteryCreator);
+  const creatorAddress = '0x998e00A168718f55Ac73b607c40b579Cc5F4DCEa'
+  deployer.deploy(LotteryBuilder, creatorAddress);
 };

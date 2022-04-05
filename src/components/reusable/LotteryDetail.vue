@@ -15,7 +15,11 @@
         </div>
         <div>
           <v-icon class="mr-2" color="primary">mdi-account-multiple</v-icon>
-          {{ numberOfPlayers }} Players
+          {{ numberOfPlayers }} participated
+        </div>
+         <div>
+          <v-icon class="mr-2" color="primary">mdi-trophy-award</v-icon>
+          {{ lottery.lotteryRewards }}
         </div>
         <div>
           <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
@@ -75,17 +79,8 @@
                 <v-icon color="blue lighten-1"> mdi-information </v-icon>
               </v-btn>
             </template>
-            <span>
-              Discount<br />
-              2 tickets 5%<br />
-              3 tickets 7.5%<br />
-              4 tickets 10%<br />
-              5 tickets 12.5%<br />
-              6 tickets 15%<br />
-              7 tickets 17.5%<br />
-              8 tickets 20%<br />
-              9 tickets 22.5%<br />
-              10 tickets 25%<br />
+            <span v-for="item in discount" :key="item.tickets">
+            {{ item.tickets }} tickets for {{ item.percent}}
             </span>
           </v-tooltip>
         </p>
@@ -96,7 +91,7 @@
             winners.length == 0 && lottery.deadlineTime < new Date().getTime()
           "
         >
-          Lottery has ended. Waiting for winners.
+          Lottery has ended. Waiting for draw.
         </p>
 
         <v-row v-if="winners.length == 0">
@@ -129,12 +124,13 @@
         >
           <v-col>
             <v-btn
+              v-if="!callResult.drawLoading"
               depressed
               color="primary"
-              :loading="callResult.loading"
-              @click.prevent="pickWinner()"
-              >Pick Winner</v-btn
+              @click.prevent="drawWinner()"
+              >DRAW</v-btn
             >
+            <img v-else height="200px" width="300px" src="../../assets/drawing.gif" />
           </v-col>
         </v-row>
       </v-card-text>
@@ -164,12 +160,22 @@ export default {
       account: null,
       winProbability: 0,
       ticketsBought: 0,
-      callResult: { loading: false, error: "" },
+      callResult: { loading: false, drawLoading: false, error: "" },
       winners: [],
       winner: {},
       rules: {
         amount: [(val) => val > 10 || `Max is 10 tickets per account!`],
       },
+      discount: [ {tickets: 2, percent: 5},
+      {tickets: 3, percent: 7.5},
+      {tickets: 4, percent: 10},
+      {tickets: 5, percent: 12.5},
+      {tickets: 6, percent: 15},
+      {tickets: 7, percent: 17.5},
+      {tickets: 8, percent: 20},
+      {tickets: 9, percent: 22.5},
+      {tickets: 10, percent: 25}
+      ]
     };
   },
   mounted() {
@@ -290,7 +296,7 @@ export default {
         overralPrice.toString(),
         "ether"
       );
-      if (ticketAmount >= 2) {
+      if (ticketAmount >= 2 && ticketAmount <= 20) {
         ticketPrice -= ticketPrice * (ticketAmount / 40);
       }
       return ticketPrice.toString();
@@ -316,8 +322,8 @@ export default {
       }
     },
 
-    pickWinner() {
-      this.callResult.loading = true;
+    drawWinner() {
+      this.callResult.drawLoading = true;
       this.lottery.contract.methods
         .pickWinner()
         .send({
@@ -328,7 +334,7 @@ export default {
         })
         .catch(() => {})
         .finally(() => {
-          this.callResult.loading = false;
+          this.callResult.drawLoading = false;
         });
     },
   },

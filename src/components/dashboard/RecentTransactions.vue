@@ -99,7 +99,7 @@
 </template>
 
 <script>
-import createLottery from "../../../contracts/createLotteryInstance";
+import createLottery from "../../../contracts/BuildLotteryInstance";
 import apiCalls from "../../services/index";
 
 export default {

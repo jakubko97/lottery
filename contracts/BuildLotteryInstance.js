@@ -1,6 +1,6 @@
 /* eslint-disable */
 import web3 from '../src/plugins/web3'
-import createLotteryJson from "../build/contracts/lotteryCreator.json";
+import createLotteryJson from "../build/contracts/LotteryBuilder.json";
 
 const address = createLotteryJson.networks[4].address;
 const abi =  createLotteryJson.abi;

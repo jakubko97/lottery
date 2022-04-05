@@ -37,7 +37,11 @@
         </v-row>
         <v-row>
           <v-col md="6" cols="12">
-            <v-select
+            <RewardsBuilderDialog 
+            @push-element="addReward" 
+            @delete-element="deleteReward"
+            :rewards="newProject.rewards" />
+            <!-- <v-select
               v-model="newProject.rewards"
               :hint="`${newProject.rewards.value.length} vyhercovia`"
               :items="rewards"
@@ -47,7 +51,7 @@
               persistent-hint
               return-object
               single-line
-            ></v-select>
+            ></v-select> -->
           </v-col>
           <v-col md="6">
             <v-text-field
@@ -88,34 +92,29 @@
 </template>
 
 <script>
-import createLottery from "../../contracts/createLotteryInstance";
-import lottery from "../../contracts/lotteryInstance";
+import createLottery from "../../contracts/BuildLotteryInstance";
+import lottery from "../../contracts/LotteryInstance";
+import RewardsBuilderDialog from "@/components/reusable/RewardsBuilderDialog";
 
 export default {
   name: "CreateProject",
+  components: {
+RewardsBuilderDialog
+  },
   data: () => ({
     nowDate: new Date().toISOString().slice(0, 10),
     nowTime: new Date().toISOString().substring(11, 16),
     date: null,
     time: null,
     account: null,
-    rewards: [
-      { text: "1. miesto 70%, 2. miesto 30%", value: [70, 30] },
-      { text: "1. miesto 80%, 2. miesto 20%", value: [80, 20] },
-      { text: "1. miesto 60%, 2. miesto 40%", value: [60, 40] },
-      {
-        text: "1. miesto 70%, 2. miesto 20%, 3. miesto 10%",
-        value: [70, 20, 10],
-      },
-      {
-        text: "1. miesto 60%, 2. miesto 25%, 3. miesto 15%",
-        value: [60, 25, 15],
-      },
-    ],
+   
     newProject: {
       limitTicketsEnabled: false,
       isLoading: false,
-      rewards: { text: "1. miesto 70%, 2. miesto 30%", value: [70, 30] },
+       rewards: [
+      { id: 1, value: 70 },
+      { id: 2, value: 30 },
+    ],
     },
   }),
   mounted() {
@@ -126,7 +125,21 @@ export default {
   },
   created() {},
   methods: {
+    addReward(reward){
+      this.newProject.rewards.push(reward)
+    },
+    deleteReward(id){
+      this.newProject.rewards = this.newProject.rewards.filter((item) => item.id !== id);
+    },
+    retrieveRewards(){
+      const arr = []
+      Array.from(this.newProject.rewards, reward => {
+        arr.push(reward.value)
+      })
+      return arr
+    },
     async startProject() {
+      console.log(this.retrieveRewards())
       this.newProject.deadline = new Date(
         this.date + "T" + this.time + ":00"
       ).getTime();
@@ -139,8 +152,8 @@ export default {
           this.newProject.description,
           this.newProject.deadline,
           this.$web3.utils.toWei(this.newProject.ticketPrice, "ether"),
-          this.newProject.rewards.value.length,
-          this.newProject.rewards.value,
+          this.retrieveRewards().length,
+          this.retrieveRewards(),
           this.newProject.limitTickets
         )
         .send({
