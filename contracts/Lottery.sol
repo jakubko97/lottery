@@ -263,7 +263,7 @@ contract Lottery {
     uint256 public numberOfWinners;
     uint256[] public rewards;
     uint256 limitTickets;
-    address[][] public tickets;
+    address[] public tickets;
 
     LotteryBuilder lotteryBuilder;
 
@@ -290,7 +290,7 @@ contract Lottery {
 
     // function getTickets() public view returns(address[] memory) {
     //     return tickets;
-    // }    
+    // }
     event LotteryStateChanged(State newState);
     event Transfer(address indexed _from, uint256 _value);
 
@@ -355,18 +355,21 @@ contract Lottery {
         public
         payable
     {
-        require(block.timestamp < deadline, 'The lottery has ended.'); // in the fundraising period
-        require(overralPrice > 0, 'Price must be over 0.');
+        require(block.timestamp < deadline, "The lottery has ended.");
+        require(overralPrice > 0, "Price must be over 0.");
 
         uint256 ticketsByAcc = this.getEnteredTicketsByAccount(msg.sender) +
             ticketAmount;
-        require(limitTickets >= ticketsByAcc, 'You are getting over the limit ticket.');
+        require(
+            limitTickets >= ticketsByAcc,
+            "You are getting over the limit ticket."
+        );
 
         contributors[msg.sender] = contributors[msg.sender].add(overralPrice);
         currentBalance = currentBalance.add(overralPrice);
 
         for (uint256 i = 0; i < ticketAmount; i++) {
-            tickets[0].push(msg.sender);
+            tickets.push(msg.sender);
         }
 
         bool doesPlayerEntered = false;
@@ -398,7 +401,7 @@ contract Lottery {
     {
         uint256 ticketsByAccount = 0;
         for (uint256 i = 0; i < tickets.length; i++) {
-            if (_address == tickets[0][i]) {
+            if (_address == tickets[i]) {
                 ticketsByAccount++;
             }
         }
@@ -420,27 +423,35 @@ contract Lottery {
     }
 
     function shuffle(address[] memory roundTickets) private view {
-    for (uint256 i = 0; i < roundTickets.length; i++) {
-        uint256 n = i + uint256(keccak256(abi.encodePacked(block.timestamp))) % (roundTickets.length - i);
-        address temp = roundTickets[n];
-        roundTickets[n] = roundTickets[i];
-        roundTickets[i] = temp;
+        for (uint256 i = 0; i < roundTickets.length; i++) {
+            uint256 n = i +
+                (uint256(keccak256(abi.encodePacked(block.timestamp))) %
+                    (roundTickets.length - i));
+            address temp = roundTickets[n];
+            roundTickets[n] = roundTickets[i];
+            roundTickets[i] = temp;
+        }
     }
-}
 
-    function random(address[] memory roundTickets) private view returns (uint256) {
+    function random(address[] memory roundTickets)
+        private
+        view
+        returns (uint256)
+    {
         return
             uint256(
                 keccak256(
-                    abi.encodePacked(block.difficulty, block.timestamp, roundTickets)
+                    abi.encodePacked(
+                        block.difficulty,
+                        block.timestamp,
+                        roundTickets
+                    )
                 )
             );
     }
 
     function pickWinner() public payable isCreator {
-        // po casovom limite, admin spusti losovanie a nasledne
-        // vyhodnotenie vyhercov
-        require(block.timestamp > deadline, 'Lottery is still open');
+        require(block.timestamp > deadline, "Lottery is still open");
 
         uint256 reward;
         currentBalance = address(this).balance;
@@ -453,21 +464,21 @@ contract Lottery {
                 uint256(winnersReward);
 
             // shuffle tickets in round i
-            shuffle(tickets[i]);
+            shuffle(tickets);
 
             // get random address from tickets
-            uint256 index = random(tickets[i]) % tickets[i].length;
+            uint256 index = random(tickets) % tickets.length;
 
             // set the winner properties
             winner storage ltWinner = winners[i];
-            ltWinner.account = tickets[i][index];
+            ltWinner.account = tickets[index];
             ltWinner.amount = reward;
             winnerIds.push(i);
 
-            // move all tickets to next round except the winners
-            for (uint256 j = 0; j < tickets[i].length; j++) {
-                if (tickets[i][j] != ltWinner.account) {
-                    tickets[i+1].push(tickets[i][j]);
+            // move out winner tickets
+            for (uint256 j = 0; j < tickets.length; j++) {
+                if (tickets[j] == ltWinner.account) {
+                    deleteUser(j);
                 }
             }
 
@@ -476,9 +487,9 @@ contract Lottery {
         }
 
         // reward for creator 3%
-        currentBalance = address(this).balance;
-        reward = (100*3 / creatorsReward) * (currentBalance / 100);
-        payable(creator).transfer(reward);
+        // currentBalance = address(this).balance;
+        // reward = ((100 * 3) / creatorsReward) * (currentBalance / 100);
+        // payable(creator).transfer(reward);
 
         // reward for deployer 2%
         //reward = (100*3 / 5) * address(this).balance / 100;
@@ -488,7 +499,10 @@ contract Lottery {
 
     // Modifier to check if the function caller is the project creator
     modifier isCreator() {
-        require(msg.sender == creator, 'Only the contract creator can execute this action.');
+        require(
+            msg.sender == creator,
+            "Only the contract creator can execute this action."
+        );
         _;
     }
 
@@ -503,17 +517,22 @@ contract Lottery {
         require(amount != 0);
 
         payable(sender).transfer(amount); //payment return
-        deletePlayer(sender); //remove from lottery
     }
 
-    function deletePlayer(address player) public returns (bool) {
-        for (uint256 i = 0; i < players.length; i++) {
-            if (players[i] == player) {
-                delete players[i];
-                return true;
-            }
+    event LogDeleteUser(address indexed userAddress, uint256 index);
+
+    function deleteUser(uint256 userIndex) public returns (address index) {
+        address rowToDelete = tickets[userIndex];
+        address rowToMove = tickets[tickets.length - 1];
+        while (rowToMove == rowToDelete) {
+            tickets.pop();
+            rowToMove = tickets[tickets.length - 1];
         }
-        return false;
+        tickets[userIndex] = tickets[tickets.length - 1];
+        tickets[tickets.length - 1] = rowToDelete;
+        tickets.pop();
+
+        return rowToDelete;
     }
 
     function revealWinners()
@@ -521,7 +540,10 @@ contract Lottery {
         view
         returns (uint256[] memory, address[] memory)
     {
-        require(block.timestamp > deadline, 'The winners have not been announced yet.');
+        require(
+            block.timestamp > deadline,
+            "The winners have not been announced yet."
+        );
 
         address[] memory addrs = new address[](winnerIds.length);
         uint256[] memory amounts = new uint256[](winnerIds.length);
@@ -584,6 +606,6 @@ contract Lottery {
         )
     {
         lotteryPlayers = players;
-        lotteryTickets = tickets[0];
+        lotteryTickets = tickets;
     }
 }
