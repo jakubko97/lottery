@@ -185,9 +185,10 @@ export default {
     // });
     // this code snippet takes the account (wallet) that is currently active
   },
-  created() {
+  async created() {
     this.lottery = this.$route.params.obj;
     this.ethData = this.$route.params.ethData;
+    this.lottery.address = this.$route.params.address;
     this.loadData();
   },
   computed: {

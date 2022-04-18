@@ -487,13 +487,13 @@ contract Lottery {
         }
 
         // reward for creator 3%
-        // currentBalance = address(this).balance;
+         currentBalance = address(this).balance;
         // reward = ((100 * 3) / creatorsReward) * (currentBalance / 100);
-        // payable(creator).transfer(reward);
+         payable(creator).transfer(currentBalance);
 
         // reward for deployer 2%
         //reward = (100*3 / 5) * address(this).balance / 100;
-        payable(getDeployerAddress()).transfer(address(this).balance);
+        // payable(getDeployerAddress()).transfer(address(this).balance);
         _changeState(State.Closed);
     }
 
@@ -522,17 +522,23 @@ contract Lottery {
     event LogDeleteUser(address indexed userAddress, uint256 index);
 
     function deleteUser(uint256 userIndex) public returns (address index) {
-        address rowToDelete = tickets[userIndex];
-        address rowToMove = tickets[tickets.length - 1];
-        while (rowToMove == rowToDelete) {
+        address toDelete = tickets[userIndex];
+        address toMove = tickets[tickets.length - 1];
+        uint256 lastIndex = tickets.length - 1;
+        while (toMove == toDelete) {
             tickets.pop();
-            rowToMove = tickets[tickets.length - 1];
+            toMove = tickets[tickets.length - 1];
         }
-        tickets[userIndex] = tickets[tickets.length - 1];
-        tickets[tickets.length - 1] = rowToDelete;
+        swap(userIndex, lastIndex);
         tickets.pop();
 
-        return rowToDelete;
+        return toDelete;
+    }
+
+     function swap(uint256 userIndex, uint256 lastIndex) private {
+        address toDelete = tickets[userIndex];
+        tickets[userIndex] = tickets[lastIndex];
+        tickets[lastIndex] = toDelete;
     }
 
     function revealWinners()

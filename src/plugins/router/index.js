@@ -26,9 +26,10 @@ const routes = [
     }
   },
    {
-    path: '/LotteryDetail',
+    path: '/LotteryDetail/:address',
     name: 'LotteryDetail',
     component: () => import(/* webpackChunkName: "CreateProject" */ '../../components/reusable/LotteryDetail.vue'),
+    props: { default: true},
     meta: {
       label: 'LotteryDetail',
       isMainMenuItem: false
