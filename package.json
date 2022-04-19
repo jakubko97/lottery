@@ -2,11 +2,14 @@
   "name": "vueportal2",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "main": "src/main.js",
+  "author": "jakub-jancik",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "node main.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@metamask/detect-provider": "^1.2.0",
@@ -68,4 +71,5 @@
     "last 2 versions",
     "not dead"
   ]
+  
 }
