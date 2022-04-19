@@ -1,16 +1,12 @@
 import Vue from 'vue';
 
-import '@/plugins'
-import '@/components/app'
-import '@/components/basic'
-
 import App from './App.vue';
 
-import vuetify from './plugins/vuetify';
-import i18n from '@/plugins/i18n';
-import router from '@/plugins/router'
+import vuetify from './plugins/vuetify.js';
+import i18n from './plugins/i18n/index.js';
+import router from './plugins/router/index.js'
 
-import web3 from './plugins/web3';
+import web3 from './plugins/web3.js';
 
 Vue.config.productionTip = false;
 
