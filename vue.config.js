@@ -8,17 +8,6 @@ module.exports = {
     'vuetify'
   ],
    configureWebpack: {
-    resolve: {
-      extensions: ['.js', '.vue', '.json'],
-      alias: {
-        '@': resolve('src'),
-        'vue$': 'vue/dist/vue.esm.js'
-      },
-      modules: [resolve('node_modules')]
-    },
-    resolveLoader: {
-      modules: [resolve('node_modules')]
-  },
       module: {
         rules: [
             {
