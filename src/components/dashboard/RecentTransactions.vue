@@ -189,10 +189,10 @@ export default {
       return this.$utils.formatDate(new Date(+uintDate * 1000));
     },
     truncateMiddle(str, n) {
-      return str.substr(0, 18) + "..." + str.substr(str.length - 3, str.length);
+      return str ? str.substr(0, 18) + "..." + str.substr(str.length - 3, str.length) : ''
     },
     truncateStart(str) {
-      return str.substr(0, 18) + "...";
+      return str ? str.substr(0, 18) + "..." : ''
     },
     async getAllTransactions() {
       this.transactions = [];
@@ -201,7 +201,8 @@ export default {
         apiCalls
           .getTransactionsByAccount(address, this.page, this.offset)
           .then((res) => {
-            this.transactions = this.transactions.concat(res.data.result);
+            if(res.data != null){
+ this.transactions = this.transactions.concat(res.data.result);
             Array.from(this.transactions, (item) => {
               item.age = new Date(item.timeStamp * 1000);
               item.dateTime = this.getDateFormat(item.timeStamp);
@@ -211,6 +212,8 @@ export default {
                 item.tickets = decodedData.params[1].value;
               }
             });
+            }
+           
           })
           .catch((e) => {})
           .finally(() => {
