@@ -13,6 +13,7 @@
     "@truffle/hdwallet-provider": "^2.0.4",
     "abi-decoder": "^2.4.0",
     "axios": "^0.24.0",
+    "babel-loader": "^8.2.4",
     "bigchaindb-driver": "^4.3.0",
     "bip39": "^3.0.4",
     "core-js": "^3.6.5",
