@@ -93,7 +93,7 @@
 
 <script>
 import createLottery from "../../contracts/BuildLotteryInstance";
-import lottery from "../../contracts/LotteryInstance";
+import lottery from "../../contracts/lotteryInstance";
 import RewardsBuilderDialog from "@/components/reusable/RewardsBuilderDialog";
 
 export default {
