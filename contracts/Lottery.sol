@@ -62,6 +62,8 @@ contract Lottery {
     // }
     event LotteryStateChanged(State newState);
     event Transfer(address indexed _from, uint256 _value);
+    event LogWinnerSelectionStarted(string message);
+    event LogWinnerSelected(address winner);
 
     constructor(
         address payable projectStarter,
@@ -265,7 +267,8 @@ contract Lottery {
             if(tickets.length == 0){
                 break;
             }
-            
+                
+            emit LogWinnerSelectionStarted(string(abi.encodePacked("Winner ", uint(i+1), " selection has started!")));   
             reward =
                 ((uint256(rewards[i]) * currentBalance) / uint256(10000)) *
                 uint256(winnersReward);
