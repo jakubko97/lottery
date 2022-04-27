@@ -2,248 +2,17 @@
 pragma solidity ^0.7.0;
 import "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 pragma experimental ABIEncoderV2;
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
+
+// import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
+
+import "./Migrations.sol";
+import "./LotteryBuilder.sol";
 
 enum State {
     Open,
     Closed,
     Suspended
-}
-
-contract LotteryBuilder {
-    using SafeMath for uint256;
-
-    // List of existing projects
-    Lottery[] private lotteries;
-    address payable creator;
-
-    constructor(address payable deployer) {
-        creator = deployer;
-    }
-
-    // Event that will be emitted whenever a new project is started
-    event ProjectStarted(
-        address contractAddress,
-        address projectStarter,
-        string projectTitle,
-        string projectDesc,
-        uint256 deadline,
-        uint256 ticketPrice,
-        uint256 numberWinners,
-        uint256[] rewards,
-        uint256 limitTickets
-    );
-
-    /** @dev Function to start a new project.
-     * @param title Title of the project to be created
-     * @param description Brief description about the project
-     * @param deadlineDate Project deadline in days
-     * @param ticketPrice Project goal in wei
-     */
-    function startProject(
-        address payable owner,
-        string calldata title,
-        string calldata description,
-        uint256 deadlineDate,
-        uint256 ticketPrice,
-        uint256 numberWinners,
-        uint256[] calldata rewards,
-        uint256 limitTickets
-    ) external {
-        uint256 raiseUntil = deadlineDate;
-        Lottery newProject = new Lottery(
-            owner,
-            title,
-            description,
-            raiseUntil,
-            ticketPrice,
-            numberWinners,
-            rewards,
-            limitTickets
-        );
-        lotteries.push(newProject);
-        emit ProjectStarted(
-            address(newProject),
-            owner,
-            title,
-            description,
-            raiseUntil,
-            ticketPrice,
-            numberWinners,
-            rewards,
-            limitTickets
-        );
-    }
-
-    struct Winners {
-        uint256[] values;
-        address[] accounts;
-    }
-    mapping(uint256 => Winners) allWinners;
-
-    struct participated {
-        address lotteryAddress;
-        uint256 value;
-        uint256 ticketsAmount;
-        State state;
-        bool won;
-        uint256 amountWon;
-    }
-    mapping(uint256 => participated) participatedList;
-
-    function participatedByAddress(address _address)
-        public
-        returns (
-            address[] memory,
-            uint256[] memory,
-            uint256[] memory,
-            State[] memory,
-            bool[] memory,
-            uint256[] memory
-        )
-    {
-        uint256 participatedIndex = 0;
-        for (uint256 i = 0; i < lotteries.length; i++) {
-            Lottery ltr = lotteries[i];
-            address[] memory players = ltr.getPlayers();
-            for (uint256 j = 0; j < players.length; j++) {
-                if (players[j] == _address) {
-                    participated storage par = participatedList[
-                        participatedIndex
-                    ];
-                    par.lotteryAddress = ltr.getContractAddress();
-                    par.value = ltr.getContributed(_address);
-                    par.ticketsAmount = ltr.getEnteredTicketsByAccount(
-                        _address
-                    );
-                    par.state = ltr.getState();
-                    par.won = false;
-                    par.amountWon = 0;
-
-                    for (uint256 k = 0; k < ltr.getNumberOfWinners(); k++) {
-                        if (_address == ltr.getWinner(k)) {
-                            par.won = true;
-                            par.amountWon = ltr.getWinnerAmount(k);
-                        }
-                    }
-                    participatedIndex++;
-                }
-            }
-        }
-
-        address[] memory addrs = new address[](participatedIndex);
-        uint256[] memory funds = new uint256[](participatedIndex);
-        uint256[] memory tickets = new uint256[](participatedIndex);
-        State[] memory states = new State[](participatedIndex);
-        bool[] memory won = new bool[](participatedIndex);
-        uint256[] memory amountWon = new uint256[](participatedIndex);
-
-        for (uint256 i = 0; i < participatedIndex; i++) {
-            participated storage pa = participatedList[i];
-            addrs[i] = pa.lotteryAddress;
-            funds[i] = pa.value;
-            tickets[i] = pa.ticketsAmount;
-            states[i] = pa.state;
-            won[i] = pa.won;
-            amountWon[i] = pa.amountWon;
-        }
-
-        return (addrs, funds, tickets, states, won, amountWon);
-    }
-
-    // function getTotalSpent(address _address) external view returns (uint256) {
-    //     uint256 totalSpent = 0;
-    //     totalSpent = this.getRewardsWonByAddress(_address) - this.getSpentState(_address);
-    //     return totalSpent;
-    // }
-
-    function getCreator() public view returns (address) {
-        return creator;
-    }
-
-    function getSpentState(address _address) external view returns (uint256) {
-        uint256 spent = 0;
-
-        for (uint256 i = 0; i < lotteries.length; i++) {
-            Lottery ltr = lotteries[i];
-            spent = spent + uint256(ltr.getContributed(_address));
-        }
-
-        return spent;
-    }
-
-    function getRewardsWonByAddress(address _address)
-        external
-        view
-        returns (uint256)
-    {
-        uint256 rewardsWon = 0;
-
-        for (uint256 i = 0; i < lotteries.length; i++) {
-            Lottery ltr = lotteries[i];
-            rewardsWon =
-                uint256(rewardsWon) +
-                uint256(ltr.getRewardsByAccount(_address));
-        }
-        return rewardsWon;
-    }
-
-    event RevealLatestWinners(Winners[] _a);
-
-    function getLatestWinners() external view returns (Winners[] memory) {
-        Lottery[] memory closedLotteries = this.returnClosedProjects();
-
-        Winners[] memory winners = new Winners[](closedLotteries.length);
-        if (closedLotteries.length != 0) {
-            for (uint256 i = 0; i < closedLotteries.length; i++) {
-                Lottery ltr = closedLotteries[i];
-                (uint256[] memory values, address[] memory accounts) = ltr
-                    .revealWinners();
-                winners[i].values = values;
-                winners[i].accounts = accounts;
-            }
-        }
-        return winners;
-    }
-
-    function returnClosedProjects() external view returns (Lottery[] memory) {
-        return this.getProjectsByState(State.Closed);
-    }
-
-    function returnOpenProjects() external view returns (Lottery[] memory) {
-        return this.getProjectsByState(State.Open);
-    }
-
-    function getProjectsByState(State state)
-        external
-        view
-        returns (Lottery[] memory)
-    {
-        uint256 count = 0;
-        for (uint256 i = 0; i < lotteries.length; i++) {
-            Lottery ltr = lotteries[i];
-            if (ltr.getState() == state) {
-                count++;
-            }
-        }
-        Lottery[] memory ltrs = new Lottery[](count);
-        count = 0;
-        for (uint256 i = 0; i < lotteries.length; i++) {
-            Lottery ltr = lotteries[i];
-            if (ltr.getState() == state) {
-                ltrs[count] = ltr;
-                count++;
-            }
-        }
-        return ltrs;
-    }
-
-    /** @dev Function to get all projects' contract addresses.
-     * @return A list of all projects' contract addreses
-     */
-    function returnAllLotteries() external view returns (Lottery[] memory) {
-        return lotteries;
-    }
 }
 
 contract Lottery {
@@ -265,10 +34,10 @@ contract Lottery {
     uint256 limitTickets;
     address[] public tickets;
 
-    LotteryBuilder lotteryBuilder;
+    Migrations migrations;
 
     function getDeployerAddress() public view returns (address) {
-        return lotteryBuilder.getCreator();
+        return migrations.getOwner();
     }
 
     struct winner {
@@ -335,12 +104,44 @@ contract Lottery {
         return address(this);
     }
 
+    function getTitle() public view returns (string memory) {
+        return title;
+    }
+
+    function getDescription() public view returns (string memory) {
+        return description;
+    }
+
+    function getTicketPrice() public view returns (uint256) {
+        return priceTicket;
+    }
+
+    function getDeadline() public view returns (uint256) {
+        return deadline;
+    }
+
+    function getLimitTicket() public view returns (uint256) {
+        return limitTickets;
+    }
+
+    function getRewards() public view returns (uint256[] memory) {
+        return rewards;
+    }
+
     function getContributed(address _address) public view returns (uint256) {
         return contributors[_address];
     }
 
     function getState() public view returns (State) {
         return state;
+    }
+
+    function getTicketsCount() public view returns (uint256) {
+        return tickets.length;
+    }
+
+    function getTickets() public view returns (address[] memory) {
+        return tickets;
     }
 
     function getWinner(uint256 id) public view returns (address) {
@@ -354,6 +155,7 @@ contract Lottery {
     function buyTicket(uint256 overralPrice, uint256 ticketAmount)
         public
         payable
+        returns (uint256)
     {
         require(block.timestamp < deadline, "The lottery has ended.");
         require(overralPrice > 0, "Price must be over 0.");
@@ -384,6 +186,8 @@ contract Lottery {
         }
 
         emit Transfer(msg.sender, overralPrice);
+
+        return tickets.length;
     }
 
     function getNumberOfWinners() public view returns (uint256) {
@@ -422,14 +226,14 @@ contract Lottery {
             tickets.length;
     }
 
-    function shuffle(address[] memory roundTickets) private view {
-        for (uint256 i = 0; i < roundTickets.length; i++) {
+    function shuffle() private{
+        for (uint256 i = 0; i < tickets.length; i++) {
             uint256 n = i +
                 (uint256(keccak256(abi.encodePacked(block.timestamp))) %
-                    (roundTickets.length - i));
-            address temp = roundTickets[n];
-            roundTickets[n] = roundTickets[i];
-            roundTickets[i] = temp;
+                    (tickets.length - i));
+            address temp = tickets[n];
+            tickets[n] = tickets[i];
+            tickets[i] = temp;
         }
     }
 
@@ -451,20 +255,23 @@ contract Lottery {
     }
 
     function pickWinner() public payable isCreator {
-        require(block.timestamp > deadline, "Lottery is still open");
-
+        // require(block.timestamp > deadline, "Lottery is still open");
         uint256 reward;
         currentBalance = address(this).balance;
         uint256 winnersReward = 95;
-        uint256 creatorsReward = 5;
+        // uint256 creatorsReward = 5;
         for (uint256 i = 0; i < numberOfWinners; i++) {
             // calculate the REWARD based on draw ROUND
+            if(tickets.length == 0){
+                break;
+            }
+            
             reward =
                 ((uint256(rewards[i]) * currentBalance) / uint256(10000)) *
                 uint256(winnersReward);
 
             // shuffle tickets in round i
-            shuffle(tickets);
+            shuffle();
 
             // get random address from tickets
             uint256 index = random(tickets) % tickets.length;
@@ -476,8 +283,14 @@ contract Lottery {
             winnerIds.push(i);
 
             // move out winner tickets
-            for (uint256 j = 0; j < tickets.length; j++) {
+            for (uint256 j = 0; j <= tickets.length - 1; j++) {
                 if (tickets[j] == ltWinner.account) {
+                    address toMove = tickets[tickets.length - 1];
+                    // TODO implement while instead if
+                    while (toMove == ltWinner.account && tickets.length - 1 != j) {
+                        tickets.pop();
+                        toMove = tickets[tickets.length - 1];
+                    } 
                     deleteUser(j);
                 }
             }
@@ -506,8 +319,16 @@ contract Lottery {
         _;
     }
 
+    function getBalance() public view returns (uint256) {
+        return currentBalance;
+    }
+
     function getPlayers() public view returns (address[] memory) {
         return players;
+    }
+
+    function getEntrantCount() public view returns (uint256) {
+        return players.length;
     }
 
     function storno(address sender) public {
@@ -523,12 +344,7 @@ contract Lottery {
 
     function deleteUser(uint256 userIndex) public returns (address index) {
         address toDelete = tickets[userIndex];
-        address toMove = tickets[tickets.length - 1];
         uint256 lastIndex = tickets.length - 1;
-        while (toMove == toDelete) {
-            tickets.pop();
-            toMove = tickets[tickets.length - 1];
-        }
         swap(userIndex, lastIndex);
         tickets.pop();
 
@@ -546,10 +362,10 @@ contract Lottery {
         view
         returns (uint256[] memory, address[] memory)
     {
-        require(
-            block.timestamp > deadline,
-            "The winners have not been announced yet."
-        );
+        // require(
+        //     block.timestamp > deadline,
+        //     "The winners have not been announced yet."
+        // );
 
         address[] memory addrs = new address[](winnerIds.length);
         uint256[] memory amounts = new uint256[](winnerIds.length);

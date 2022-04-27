@@ -9,8 +9,12 @@ contract Migrations {
         if (msg.sender == owner) _;
     }
 
-    constructor() public {
+    constructor() {
         owner = msg.sender;
+    }
+
+    function getOwner() public view returns (address) {
+        return owner;
     }
 
     function setCompleted(uint256 completed) public restricted {

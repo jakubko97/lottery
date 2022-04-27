@@ -1,7 +1,12 @@
 /* eslint-disable no-undef */
 const LotteryBuilder = artifacts.require("LotteryBuilder");
+const MetaCoin = artifacts.require("MetaCoin");
+const ConvertLib = artifacts.require("ConvertLib");
 
 module.exports = function(deployer) {
-  const creatorAddress = '0x998e00A168718f55Ac73b607c40b579Cc5F4DCEa'
-  deployer.deploy(LotteryBuilder, creatorAddress);
+  deployer.deploy(ConvertLib);
+  deployer.link(ConvertLib, MetaCoin);
+  deployer.deploy(LotteryBuilder);
+  deployer.deploy(MetaCoin);
+
 };
