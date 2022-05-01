@@ -87,21 +87,6 @@ contract Lottery {
         limitTickets = lotteryLimitTickets;
     }
 
-    function getRewardsByAccount(address _address)
-        public
-        view
-        returns (uint256)
-    {
-        uint256 rewardsWon = 0;
-        for (uint256 i = 0; i < numberOfWinners; i++) {
-            winner storage ltWinner = winners[i];
-            if (ltWinner.account == _address) {
-                rewardsWon = uint256(rewardsWon) + uint256(ltWinner.amount);
-            }
-        }
-        return rewardsWon;
-    }
-
     function getContractAddress() public view returns (address) {
         return address(this);
     }
@@ -154,6 +139,26 @@ contract Lottery {
         return winners[id].amount;
     }
 
+    function getNumberOfWinners() public view returns (uint256) {
+        return numberOfWinners;
+    }
+
+    function getOwner() public view returns (address) {
+        return creator;
+    }
+
+    function getBalance() public view returns (uint256) {
+        return currentBalance;
+    }
+
+    function getPlayers() public view returns (address[] memory) {
+        return players;
+    }
+
+    function getEntrantCount() public view returns (uint256) {
+        return players.length;
+    }
+
     function buyTicket(uint256 overralPrice, uint256 ticketAmount)
         public
         payable
@@ -192,12 +197,19 @@ contract Lottery {
         return tickets.length;
     }
 
-    function getNumberOfWinners() public view returns (uint256) {
-        return numberOfWinners;
-    }
-
-    function getOwner() public view returns (address) {
-        return creator;
+    function getRewardsByAccount(address _address)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 rewardsWon = 0;
+        for (uint256 i = 0; i < numberOfWinners; i++) {
+            winner storage ltWinner = winners[i];
+            if (ltWinner.account == _address) {
+                rewardsWon = uint256(rewardsWon) + uint256(ltWinner.amount);
+            }
+        }
+        return rewardsWon;
     }
 
     function getEnteredTicketsByAccount(address _address)
@@ -228,7 +240,7 @@ contract Lottery {
             tickets.length;
     }
 
-    function shuffle() private{
+    function shuffle() private {
         for (uint256 i = 0; i < tickets.length; i++) {
             uint256 n = i +
                 (uint256(keccak256(abi.encodePacked(block.timestamp))) %
@@ -261,14 +273,22 @@ contract Lottery {
         uint256 reward;
         currentBalance = address(this).balance;
         uint256 winnersReward = 95;
-        // uint256 creatorsReward = 5;
+        uint256 creatorsReward = 5;
         for (uint256 i = 0; i < numberOfWinners; i++) {
             // calculate the REWARD based on draw ROUND
-            if(tickets.length == 0){
+            if (tickets.length == 0) {
                 break;
             }
-                
-            emit LogWinnerSelectionStarted(string(abi.encodePacked("Winner ", uint(i+1), " selection has started!")));   
+
+            emit LogWinnerSelectionStarted(
+                string(
+                    abi.encodePacked(
+                        "Winner ",
+                        uint256(i + 1),
+                        " selection has started!"
+                    )
+                )
+            );
             reward =
                 ((uint256(rewards[i]) * currentBalance) / uint256(10000)) *
                 uint256(winnersReward);
@@ -289,11 +309,12 @@ contract Lottery {
             for (uint256 j = 0; j <= tickets.length - 1; j++) {
                 if (tickets[j] == ltWinner.account) {
                     address toMove = tickets[tickets.length - 1];
-                    // TODO implement while instead if
-                    while (toMove == ltWinner.account && tickets.length - 1 != j) {
+                    while (
+                        toMove == ltWinner.account && tickets.length - 1 != j
+                    ) {
                         tickets.pop();
                         toMove = tickets[tickets.length - 1];
-                    } 
+                    }
                     deleteUser(j);
                 }
             }
@@ -303,13 +324,13 @@ contract Lottery {
         }
 
         // reward for creator 3%
-         currentBalance = address(this).balance;
-        // reward = ((100 * 3) / creatorsReward) * (currentBalance / 100);
-         payable(creator).transfer(currentBalance);
+        currentBalance = address(this).balance;
+        reward = ((100 * 3) / creatorsReward) * (currentBalance / 100);
+        payable(creator).transfer(reward);
 
         // reward for deployer 2%
-        //reward = (100*3 / 5) * address(this).balance / 100;
-        // payable(getDeployerAddress()).transfer(address(this).balance);
+        // reward = (((100 * 2) / creatorsReward) * address(this).balance) / 100;
+        payable(getDeployerAddress()).transfer(address(this).balance);
         _changeState(State.Closed);
     }
 
@@ -320,27 +341,6 @@ contract Lottery {
             "Only the contract creator can execute this action."
         );
         _;
-    }
-
-    function getBalance() public view returns (uint256) {
-        return currentBalance;
-    }
-
-    function getPlayers() public view returns (address[] memory) {
-        return players;
-    }
-
-    function getEntrantCount() public view returns (uint256) {
-        return players.length;
-    }
-
-    function storno(address sender) public {
-        require(block.timestamp < deadline); //is open period
-
-        uint256 amount = contributors[msg.sender];
-        require(amount != 0);
-
-        payable(sender).transfer(amount); //payment return
     }
 
     event LogDeleteUser(address indexed userAddress, uint256 index);
@@ -354,7 +354,7 @@ contract Lottery {
         return toDelete;
     }
 
-     function swap(uint256 userIndex, uint256 lastIndex) private {
+    function swap(uint256 userIndex, uint256 lastIndex) private {
         address toDelete = tickets[userIndex];
         tickets[userIndex] = tickets[lastIndex];
         tickets[lastIndex] = toDelete;
