@@ -40,6 +40,7 @@ export default {
   mounted() {
     // this code snippet takes the account (wallet) that is currently active
   },
+  
   async created() {
     this.$xapi
       .get(

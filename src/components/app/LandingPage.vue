@@ -13,8 +13,6 @@
 </template>
 
 <script>
-const Web3 = require("web3");
-
 export default {
   name: "LandingPage",
   components: {},

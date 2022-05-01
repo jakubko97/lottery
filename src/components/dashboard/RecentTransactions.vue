@@ -202,7 +202,7 @@ export default {
           .getTransactionsByAccount(address, this.page, this.offset)
           .then((res) => {
             if(res.data != null){
- this.transactions = this.transactions.concat(res.data.result);
+            this.transactions = this.transactions.concat(res.data.result);
             Array.from(this.transactions, (item) => {
               item.age = new Date(item.timeStamp * 1000);
               item.dateTime = this.getDateFormat(item.timeStamp);

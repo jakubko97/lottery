@@ -311,8 +311,8 @@ export default {
           .send({
             from: this.account,
             to: this.lottery.contract.options.address,
-            value: overralPrice,
-          })
+            value: overralPrice
+                      })
           .then((res) => {
             console.log(res.data);
           })

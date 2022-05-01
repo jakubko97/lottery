@@ -1,5 +1,9 @@
 import Vue from 'vue';
 
+import '@/plugins'
+import '@/components/app'
+import '@/components/basic'
+
 import App from './App.vue';
 
 import vuetify from './plugins/vuetify.js';
