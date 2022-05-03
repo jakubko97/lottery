@@ -156,11 +156,11 @@ contract Lottery {
         return players.length;
     }
 
-    function winnerHasNotBeenSet() private view returns (bool){
+    function winnerHasNotBeenSet() private view returns (bool) {
         return winnerIds.length == 0;
     }
 
-    function pickWinnerIsInProgress() private view returns (bool){
+    function pickWinnerIsInProgress() private view returns (bool) {
         return state == State.InProgress;
     }
 
@@ -168,20 +168,20 @@ contract Lottery {
         require(msg.sender == creator, "Only the owner can kill this contract");
         selfdestruct(creator);
     }
-    function buyTicket(uint256 ticketAmount)
-        public
-        payable
-        returns (uint256)
-    {
-        require(block.timestamp < deadline, "The lottery has ended.");
-        require(msg.value >= priceTicket, "Price is not over 0 eth.");
-        require(winnerHasNotBeenSet(), "Lottery has already been closed. Winners were already selected.");
+
+    function buyTicket(uint256 ticketAmount) public payable returns (uint256) {
+        require(block.timestamp < deadline, "The lottery has ended");
+        require(msg.value >= priceTicket, "Invalid entry fee provided");
+        require(
+            winnerHasNotBeenSet(),
+            "Lottery has already been closed. Winners were already selected."
+        );
 
         uint256 ticketsByAcc = this.getEnteredTicketsByAccount(msg.sender) +
             ticketAmount;
         require(
             limitTickets >= ticketsByAcc,
-            "You are getting over the limit ticket."
+            "Entered tickets should not be over the limit ticket by address."
         );
 
         contributors[msg.sender] = contributors[msg.sender].add(msg.value);
@@ -281,69 +281,73 @@ contract Lottery {
     function pickWinner() public payable isCreator {
         // require(block.timestamp > deadline, "Lottery is still open");
         require(winnerHasNotBeenSet(), "Winner has already been selected");
-        require(!pickWinnerIsInProgress(), "Winners selection already in progress.");
+        require(
+            !pickWinnerIsInProgress(),
+            "Winners selection already in progress"
+        );
         _changeState(State.InProgress);
         uint256 reward;
         currentBalance = address(this).balance;
         uint256 winnersReward = 95;
         uint256 creatorsReward = 5;
 
-        if(players.length <= numberOfWinners){
+        if (players.length <= numberOfWinners) {
             for (uint256 i = 0; i < players.length; i++) {
                 address player = players[i];
                 payable(player).transfer(contributors[player]);
             }
-        }else{
+        } else {
             for (uint256 i = 0; i < numberOfWinners; i++) {
-            // calculate the REWARD based on draw ROUND
-            if (tickets.length == 0) {
-                break;
-            }
-
-            emit LogWinnerSelectionStarted(
-                string(
-                    abi.encodePacked(
-                        "Winner ",
-                        uint256(i + 1),
-                        " selection has started!"
-                    )
-                )
-            );
-            reward =
-                ((uint256(rewards[i]) * currentBalance) / uint256(10000)) *
-                uint256(winnersReward);
-
-            // shuffle tickets in round i
-            shuffle();
-
-            // get random address from tickets
-            uint256 index = random(tickets) % tickets.length;
-
-            // set the winner properties
-            winner storage ltWinner = winners[i];
-            ltWinner.account = tickets[index];
-            ltWinner.amount = reward;
-            winnerIds.push(i);
-
-            // move out winner tickets
-            for (uint256 j = 0; j <= tickets.length - 1; j++) {
-                if (tickets[j] == ltWinner.account) {
-                    address toMove = tickets[tickets.length - 1];
-                    while (
-                        toMove == ltWinner.account && tickets.length - 1 != j
-                    ) {
-                        tickets.pop();
-                        toMove = tickets[tickets.length - 1];
-                    }
-                    deleteUser(j);
+                // calculate the REWARD based on draw ROUND
+                if (tickets.length == 0) {
+                    break;
                 }
-            }
 
-            // send reward to the winner
-            payable(ltWinner.account).transfer(reward);
+                emit LogWinnerSelectionStarted(
+                    string(
+                        abi.encodePacked(
+                            "Winner ",
+                            (i + 1),
+                            " selection has started!"
+                        )
+                    )
+                );
+                reward =
+                    ((uint256(rewards[i]) * currentBalance) / uint256(10000)) *
+                    uint256(winnersReward);
+
+                // shuffle tickets in round i
+                shuffle();
+
+                // get random address from tickets
+                uint256 index = random(tickets) % tickets.length;
+
+                // set the winner properties
+                winner storage ltWinner = winners[i];
+                ltWinner.account = tickets[index];
+                ltWinner.amount = reward;
+                winnerIds.push(i);
+
+                // move out winner tickets
+                for (uint256 j = 0; j <= tickets.length - 1; j++) {
+                    if (tickets[j] == ltWinner.account) {
+                        address toMove = tickets[tickets.length - 1];
+                        while (
+                            toMove == ltWinner.account &&
+                            tickets.length - 1 != j
+                        ) {
+                            tickets.pop();
+                            toMove = tickets[tickets.length - 1];
+                        }
+                        deleteUser(j);
+                    }
+                }
+
+                // send reward to the winner
+                payable(ltWinner.account).transfer(reward);
             }
         }
-       
+
         // reward for creator 3%
         currentBalance = address(this).balance;
         reward = ((100 * 3) / creatorsReward) * (currentBalance / 100);
@@ -358,7 +362,7 @@ contract Lottery {
     modifier isCreator() {
         require(
             msg.sender == creator,
-            "Only the contract creator can execute this action."
+            "Only the contract creator can execute this action"
         );
         _;
     }

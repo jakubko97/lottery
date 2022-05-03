@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const truffleAssert = require('truffle-assertions');
 const Lottery = artifacts.require("Lottery");
+const assert = require("chai").assert;
 
 const Web3 = require('web3');
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545'));
@@ -12,12 +13,14 @@ contract('Lottery', (accounts) => {
   let ticketPrice = web3.utils.toWei('0.10', "ether")
   const ticketLimit = 100
   const accountOne = accounts[0];
-  let prizes = [70,30]
+  let prizes = [70, 30]
 
   // helpers
   async function assertContractBalance(expectedBalance) {
-    const actualBalance = (await lottery.getBalance.call().valueOf());
-    assert.equal(actualBalance, expectedBalance, "Expected balance is not correct");
+
+    let actualBalance
+    await lottery.getBalance.call().then(function (balance) { actualBalance = balance });
+    assert.equal(actualBalance.words[0], expectedBalance, "Expected balance is not correct");
   }
 
   async function assertTicketCount(expectedTicketCount) {
@@ -82,7 +85,7 @@ contract('Lottery', (accounts) => {
     await lottery.kill({ from: accountOne });
   });
 
-  it('should buy ticket correctly', async () => {
+  it('allow to buy ticket correctly', async () => {
     const accountTwo = accounts[1];
 
     const ticketPrice = (await lottery.getTicketPrice.call()).valueOf();
@@ -119,51 +122,50 @@ contract('Lottery', (accounts) => {
     assert.equal(winners.length, prizes.length, "The number of winners is not " + prizes.length);
   });
   it('prevents lottery entry if insufficient entry fee provided', async () => {
-    await truffleAssert.reverts(lottery.buyTicket(1, { from: accounts[2], value: ticketPrice - 10000 }), 'Invalid entry fee provided.');
+    await truffleAssert.reverts(lottery.buyTicket(1, { from: accounts[2], value: ticketPrice - 10000 }), 'Invalid entry fee provided');
   });
   it('prevents lottery entry if the address entered tickets are greater than limit', async () => {
     let amount = ticketPrice * ticketLimit + 1
 
-    await truffleAssert.reverts(lottery.buyTicket(ticketLimit + 1, { from: accounts[4], value: amount }), 
-    'User entered tickets that is greater than limit.')
+    await truffleAssert.reverts(lottery.buyTicket(ticketLimit + 1, { from: accounts[4], value: amount }),
+      'Entered tickets should not be over the limit ticket by address')
   });
   it("should not be able to enter without sending ether", async () => {
     let tickets = 0
     let amount = 0
 
     await truffleAssert.reverts(lottery.buyTicket(tickets, { from: accounts[4], value: amount }),
-        "Entry fee should be sended."
+      "Invalid entry fee provided"
     );
-});
-it('prevents entry into the lottery if winner is already selected', async () => {
-  await enterIntoLotteryAndVerifyContractState(accounts[3], 1)
-  await enterIntoLotteryAndVerifyContractState(accounts[4], 2)
-  await enterIntoLotteryAndVerifyContractState(accounts[5], 3)
-  await lottery.pickWinner({ from: accountOne })
-
-  await truffleAssert.reverts(lottery.buyTicket(1, { from: accounts[2], value: ticketPrice - 1 }),
-    'Winners are already selected. No entries allowed now.');
-
-  await assertContractBalance(0);
-});
-  it('allows to execute pick winner with single entrant and return the funds', async () => {
-
-    const tickets = await enterIntoLotteryAndVerifyContractState(accounts[1]);
-    const winnerBalanceBefore = await web3.eth.getBalance(accounts[1]); 
+  });
+  it('prevents entry into the lottery if winner is already selected', async () => {
+    await enterIntoLotteryAndVerifyContractState(accounts[3], 1)
+    await enterIntoLotteryAndVerifyContractState(accounts[4], 2)
+    await enterIntoLotteryAndVerifyContractState(accounts[5], 3)
     await lottery.pickWinner({ from: accountOne })
 
-    const winnerBalanceAfter = await web3.eth.getBalance(accounts[1]); 
-    assert.equal(parseInt(winnerBalanceAfter, 10), parseInt(winnerBalanceBefore, 10) + parseInt(ticketPrice * tickets, 10),
-      'Winner account balance incorrect after lottery completion.');
+    await truffleAssert.reverts(lottery.buyTicket(1, { from: accounts[2], value: ticketPrice }),
+      'Lottery has already been closed. Winners were already selected');
 
   });
-  it('prevents double winner selection', async () => {
+  it('allows to pick winner with single entrant and return the funds', async () => {
+
+    const tickets = await enterIntoLotteryAndVerifyContractState(accounts[1]);
+    const winnerBalanceBefore = await web3.eth.getBalance(accounts[1]);
+    await lottery.pickWinner({ from: accountOne })
+
+    const winnerBalanceAfter = await web3.eth.getBalance(accounts[1]);
+    assert.equal(parseInt(winnerBalanceAfter, 10), parseInt(winnerBalanceBefore, 10) + parseInt(ticketPrice * tickets, 10),
+      'Winner account balance incorrect after lottery completion');
+    await assertContractBalance(0);
+
+  });
+  it('prevents picking winner after when lottery closed', async () => {
     await enterIntoLotteryAndVerifyContractState(accounts[1], 1);
     await enterIntoLotteryAndVerifyContractState(accounts[2], 2);
     await enterIntoLotteryAndVerifyContractState(accounts[3], 3);
 
     await lottery.pickWinner({ from: accountOne })
-    truffleAssert.reverts(await lottery.pickWinner({ from: accountOne }), 'Winners were already selected.')
+    await truffleAssert.reverts(lottery.pickWinner({ from: accountOne }), "Winner has already been selected")
   });
-
 });
