@@ -28,6 +28,7 @@
     "lodash": "^4.17.21",
     "openzeppelin-solidity": "^4.3.3",
     "truffle": "^5.4.29",
+    "truffle-assertions": "^0.9.2",
     "truffle-hdwallet-provider": "^1.0.17",
     "vue": "^2.6.11",
     "vue-i18n": "^8.26.7",

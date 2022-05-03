@@ -141,10 +141,6 @@ export default {
   created() {
     if (this.projectAddresses.length != 0) {
       this.getAllTransactions();
-
-      // apiCalls.getTransactionsByAccount(this.projectAddresses[0]).then((res) => {
-      //   console.log(res);
-      // });
     }
   },
   methods: {
@@ -197,8 +193,8 @@ export default {
     async getAllTransactions() {
       this.transactions = [];
       this.loading = true;
-      await Array.from(this.projectAddresses, (address) => {
-        apiCalls
+      Array.from(this.projectAddresses, async (address) => {
+        await apiCalls
           .getTransactionsByAccount(address, this.page, this.offset)
           .then((res) => {
             if(res.data != null){

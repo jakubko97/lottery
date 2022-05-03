@@ -1,8 +1,6 @@
 /* eslint-disable no-undef */
+const truffleAssert = require('truffle-assertions');
 const Lottery = artifacts.require("Lottery");
-const LotteryBuilder = artifacts.require("LotteryBuilder");
-
-const { waitForEvent } = require('./utils');
 
 const Web3 = require('web3');
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545'));
@@ -11,13 +9,15 @@ contract('Lottery', (accounts) => {
   let lottery
 
   let randomNumber = 6
-  let ticketPrice
+  let ticketPrice = web3.utils.toWei('0.10', "ether")
+  const ticketLimit = 100
   const accountOne = accounts[0];
+  let prizes = [70,30]
 
   // helpers
   async function assertContractBalance(expectedBalance) {
-    const actualBalance = (await lottery.getBalance.call());
-    assert.equal(actualBalance.valueOf(), expectedBalance, "Expected balance is not correct");
+    const actualBalance = (await lottery.getBalance.call().valueOf());
+    assert.equal(actualBalance, expectedBalance, "Expected balance is not correct");
   }
 
   async function assertTicketCount(expectedTicketCount) {
@@ -37,7 +37,7 @@ contract('Lottery', (accounts) => {
     let tickets = Math.floor(Math.random() * randomNumber) + 1; // Returns a random integer from 1 to 5:
     //expectedTicketsCount = expectedTicketsCount + tickets
     let amount = ticketPrice * tickets
-    await lottery.buyTicket(BigInt(amount), tickets, { from: entrant, value: amount })
+    await lottery.buyTicket(tickets, { from: entrant, value: amount })
 
     await assertEntrantCount(expectedEntrantCount);
 
@@ -50,16 +50,13 @@ contract('Lottery', (accounts) => {
     const title = 'title'
     const description = 'description'
     const deadline = 1658775099
-    const prizes = [100]
     const numberOfWinners = prizes.length
-    ticketPrice = web3.utils.toWei('0.10', "ether")
-    const ticketLimit = 100
-    lottery = await Lottery.new(accountOne,
+    const deployer = accounts[9]
+    lottery = await Lottery.new(deployer, accountOne,
       title,
       description,
       deadline,
       ticketPrice,
-      numberOfWinners,
       prizes,
       ticketLimit);
 
@@ -74,7 +71,6 @@ contract('Lottery', (accounts) => {
     assert.equal(title, lotteryTitle, "Title did not match.");
     assert.equal(description, lotteryDescription, "Description did not match.");
     assert.equal(ticketPrice, loteryTicketPrice, "Ticket price did not match.");
-    //assert.equal(prizes, lotteryPrizes, "Prizes did not match.");
     assert.equal(accountOne, lotteryOwner, "Creator did not match.");
     assert.equal(ticketLimit, lotteryTicketLimit, "Ticket limit did not match.");
 
@@ -82,18 +78,20 @@ contract('Lottery', (accounts) => {
     await assertEntrantCount(0);
   });
 
-  it('should buy ticket correctly', async () => {
+  afterEach(async () => {
+    await lottery.kill({ from: accountOne });
+  });
 
-    // Make transaction from first account to second.
+  it('should buy ticket correctly', async () => {
     const accountTwo = accounts[1];
 
     const ticketPrice = (await lottery.getTicketPrice.call()).valueOf();
     const getLotteryBalanceBefore = (await lottery.getBalance.call()).toNumber();
     const entrantCountBefore = (await lottery.getEntrantCount.call()).toNumber();
 
-    const tickets = 3
-    const amount = ticketPrice * tickets
-    await lottery.buyTicket(BigInt(amount), tickets, { from: accountTwo });
+    let tickets = Math.floor(Math.random() * 5) + 1;
+    let amount = ticketPrice * tickets
+    await lottery.buyTicket(tickets, { from: accounts[4], value: amount })
 
     const getLotteryBalanceAfter = (await lottery.getBalance.call()).valueOf();
     const entrantCount = (await lottery.getEntrantCount.call()).toNumber();
@@ -110,8 +108,7 @@ contract('Lottery', (accounts) => {
     await enterIntoLotteryAndVerifyContractState(accounts[5], 5)
     await enterIntoLotteryAndVerifyContractState(accounts[6], 6)
 
-    const instance = await lottery.pickWinner({ from: accountOne })
-    // console.log(await lottery.getTickets())
+    await lottery.pickWinner({ from: accountOne })
 
     const winnerObject = await lottery.revealWinners()
     const prizes = winnerObject[0]
@@ -119,33 +116,54 @@ contract('Lottery', (accounts) => {
     Array.from(prizes, prize => {
       prize = prize.toString()
     })
-    console.log(prizes)
-    console.log(winners)
-    // await assertTicketCount(expectedTicketsCount);
+    assert.equal(winners.length, prizes.length, "The number of winners is not " + prizes.length);
   });
-  it('distribute the funds', async () => {
+  it('prevents lottery entry if insufficient entry fee provided', async () => {
+    await truffleAssert.reverts(lottery.buyTicket(1, { from: accounts[2], value: ticketPrice - 10000 }), 'Invalid entry fee provided.');
+  });
+  it('prevents lottery entry if the address entered tickets are greater than limit', async () => {
+    let amount = ticketPrice * ticketLimit + 1
+
+    await truffleAssert.reverts(lottery.buyTicket(ticketLimit + 1, { from: accounts[4], value: amount }), 
+    'User entered tickets that is greater than limit.')
+  });
+  it("should not be able to enter without sending ether", async () => {
+    let tickets = 0
+    let amount = 0
+
+    await truffleAssert.reverts(lottery.buyTicket(tickets, { from: accounts[4], value: amount }),
+        "Entry fee should be sended."
+    );
+});
+it('prevents entry into the lottery if winner is already selected', async () => {
+  await enterIntoLotteryAndVerifyContractState(accounts[3], 1)
+  await enterIntoLotteryAndVerifyContractState(accounts[4], 2)
+  await enterIntoLotteryAndVerifyContractState(accounts[5], 3)
+  await lottery.pickWinner({ from: accountOne })
+
+  await truffleAssert.reverts(lottery.buyTicket(1, { from: accounts[2], value: ticketPrice - 1 }),
+    'Winners are already selected. No entries allowed now.');
+
+  await assertContractBalance(0);
+});
+  it('allows to execute pick winner with single entrant and return the funds', async () => {
 
     const tickets = await enterIntoLotteryAndVerifyContractState(accounts[1]);
-    const winnerBalanceBefore = await web3.eth.getBalance(accounts[1]); // after entering but before winning
-    // await assertTicketCount(expectedTicketsCount);
+    const winnerBalanceBefore = await web3.eth.getBalance(accounts[1]); 
     await lottery.pickWinner({ from: accountOne })
 
-    const winnerBalanceAfter = await web3.eth.getBalance(accounts[1]); // TODO break into helper function?
-    // balance after winning should equal balance before winning + entry fee for 1 user
+    const winnerBalanceAfter = await web3.eth.getBalance(accounts[1]); 
     assert.equal(parseInt(winnerBalanceAfter, 10), parseInt(winnerBalanceBefore, 10) + parseInt(ticketPrice * tickets, 10),
       'Winner account balance incorrect after lottery completion.');
 
   });
-  it('allows winner selection with multiple entrants', async () => {
+  it('prevents double winner selection', async () => {
     await enterIntoLotteryAndVerifyContractState(accounts[1], 1);
     await enterIntoLotteryAndVerifyContractState(accounts[2], 2);
+    await enterIntoLotteryAndVerifyContractState(accounts[3], 3);
 
     await lottery.pickWinner({ from: accountOne })
-
-    await assertContractBalance(0);
-    const winnerObject = await lottery.revealWinners()
-    const winners = winnerObject[1]
-    assert.isTrue(winners.includes(accounts[1]) || winners.includes(accounts[2]), 'expecting either account 1 or account 2 to win');
+    truffleAssert.reverts(await lottery.pickWinner({ from: accountOne }), 'Winners were already selected.')
   });
 
 });

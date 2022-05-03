@@ -6,18 +6,16 @@ pragma experimental ABIEncoderV2;
 
 // import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 
-import "./Migrations.sol";
-import "./LotteryBuilder.sol";
-
 enum State {
     Open,
     Closed,
-    Suspended
+    InProgress
 }
 
 contract Lottery {
     using SafeMath for uint256;
     // State variables
+    address payable public deployer;
     address payable public creator;
     uint256 public priceTicket; // required to reach at least this much, else everyone gets refund
     uint256 public created;
@@ -34,10 +32,8 @@ contract Lottery {
     uint256 limitTickets;
     address[] public tickets;
 
-    Migrations migrations;
-
     function getDeployerAddress() public view returns (address) {
-        return migrations.getOwner();
+        return deployer;
     }
 
     struct winner {
@@ -66,15 +62,16 @@ contract Lottery {
     event LogWinnerSelected(address winner);
 
     constructor(
+        address payable projectDeployer,
         address payable projectStarter,
         string memory projectTitle,
         string memory projectDesc,
         uint256 deadlineTime,
         uint256 projectTicketPrice,
-        uint256 numberWinners,
         uint256[] memory lotteryRewards,
         uint256 lotteryLimitTickets
     ) {
+        deployer = projectDeployer;
         creator = projectStarter;
         title = projectTitle;
         description = projectDesc;
@@ -82,7 +79,7 @@ contract Lottery {
         deadline = deadlineTime;
         currentBalance = 0;
         created = block.timestamp;
-        numberOfWinners = numberWinners;
+        numberOfWinners = lotteryRewards.length;
         rewards = lotteryRewards;
         limitTickets = lotteryLimitTickets;
     }
@@ -140,7 +137,7 @@ contract Lottery {
     }
 
     function getNumberOfWinners() public view returns (uint256) {
-        return numberOfWinners;
+        return rewards.length;
     }
 
     function getOwner() public view returns (address) {
@@ -159,13 +156,26 @@ contract Lottery {
         return players.length;
     }
 
-    function buyTicket(uint256 overralPrice, uint256 ticketAmount)
+    function winnerHasNotBeenSet() private view returns (bool){
+        return winnerIds.length == 0;
+    }
+
+    function pickWinnerIsInProgress() private view returns (bool){
+        return state == State.InProgress;
+    }
+
+    function kill() external {
+        require(msg.sender == creator, "Only the owner can kill this contract");
+        selfdestruct(creator);
+    }
+    function buyTicket(uint256 ticketAmount)
         public
         payable
         returns (uint256)
     {
         require(block.timestamp < deadline, "The lottery has ended.");
-        require(overralPrice > 0, "Price must be over 0.");
+        require(msg.value >= priceTicket, "Price is not over 0 eth.");
+        require(winnerHasNotBeenSet(), "Lottery has already been closed. Winners were already selected.");
 
         uint256 ticketsByAcc = this.getEnteredTicketsByAccount(msg.sender) +
             ticketAmount;
@@ -174,8 +184,8 @@ contract Lottery {
             "You are getting over the limit ticket."
         );
 
-        contributors[msg.sender] = contributors[msg.sender].add(overralPrice);
-        currentBalance = currentBalance.add(overralPrice);
+        contributors[msg.sender] = contributors[msg.sender].add(msg.value);
+        currentBalance = currentBalance.add(msg.value);
 
         for (uint256 i = 0; i < ticketAmount; i++) {
             tickets.push(msg.sender);
@@ -192,7 +202,7 @@ contract Lottery {
             players.push(msg.sender);
         }
 
-        emit Transfer(msg.sender, overralPrice);
+        emit Transfer(msg.sender, msg.value);
 
         return tickets.length;
     }
@@ -270,11 +280,21 @@ contract Lottery {
 
     function pickWinner() public payable isCreator {
         // require(block.timestamp > deadline, "Lottery is still open");
+        require(winnerHasNotBeenSet(), "Winner has already been selected");
+        require(!pickWinnerIsInProgress(), "Winners selection already in progress.");
+        _changeState(State.InProgress);
         uint256 reward;
         currentBalance = address(this).balance;
         uint256 winnersReward = 95;
         uint256 creatorsReward = 5;
-        for (uint256 i = 0; i < numberOfWinners; i++) {
+
+        if(players.length <= numberOfWinners){
+            for (uint256 i = 0; i < players.length; i++) {
+                address player = players[i];
+                payable(player).transfer(contributors[player]);
+            }
+        }else{
+            for (uint256 i = 0; i < numberOfWinners; i++) {
             // calculate the REWARD based on draw ROUND
             if (tickets.length == 0) {
                 break;
@@ -321,15 +341,15 @@ contract Lottery {
 
             // send reward to the winner
             payable(ltWinner.account).transfer(reward);
+            }
         }
-
+       
         // reward for creator 3%
         currentBalance = address(this).balance;
         reward = ((100 * 3) / creatorsReward) * (currentBalance / 100);
         payable(creator).transfer(reward);
 
         // reward for deployer 2%
-        // reward = (((100 * 2) / creatorsReward) * address(this).balance) / 100;
         payable(getDeployerAddress()).transfer(address(this).balance);
         _changeState(State.Closed);
     }

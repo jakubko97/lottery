@@ -9,16 +9,20 @@ contract LotteryBuilder {
 
     // List of existing projects
     Lottery[] private lotteries;
+    address public owner;
 
+    constructor() {
+        owner = msg.sender;
+    }
     // Event that will be emitted whenever a new project is started
     event ProjectStarted(
+        address deployer,
         address contractAddress,
         address projectStarter,
         string projectTitle,
         string projectDesc,
         uint256 deadline,
         uint256 ticketPrice,
-        uint256 numberWinners,
         uint256[] rewards,
         uint256 limitTickets
     );
@@ -30,35 +34,35 @@ contract LotteryBuilder {
      * @param ticketPrice Project goal in wei
      */
     function startProject(
-        address payable owner,
+        address payable deployer,
+        address payable creator,
         string calldata title,
         string calldata description,
         uint256 deadlineDate,
         uint256 ticketPrice,
-        uint256 numberWinners,
         uint256[] calldata rewards,
         uint256 limitTickets
     ) external {
         uint256 raiseUntil = deadlineDate;
         Lottery newProject = new Lottery(
-            owner,
+            deployer,
+            creator,
             title,
             description,
             raiseUntil,
             ticketPrice,
-            numberWinners,
             rewards,
             limitTickets
         );
         lotteries.push(newProject);
         emit ProjectStarted(
             address(newProject),
-            owner,
+            deployer,
+            creator,
             title,
             description,
             raiseUntil,
             ticketPrice,
-            numberWinners,
             rewards,
             limitTickets
         );
@@ -79,6 +83,10 @@ contract LotteryBuilder {
         uint256 amountWon;
     }
     mapping(uint256 => participated) participatedList;
+
+    function getOwner() public view returns (address) {
+        return owner;
+    }
 
     function participatedByAddress(address _address)
         public

@@ -58,6 +58,7 @@ export default {
   },
   methods: {
     async getProjects() {
+      console.log(createLottery)
       createLottery.methods
         .returnAllLotteries()
         .call()

@@ -213,7 +213,7 @@ export default {
   },
   methods: {
     async loadData() {
-      this.$web3.eth.getAccounts().then((accounts) => {
+      await this.$web3.eth.getAccounts().then((accounts) => {
         [this.account] = accounts;
         this.lottery.contract.methods
           .getWinProbabiltyByAccount(this.account)
@@ -231,10 +231,7 @@ export default {
           })
           .catch(() => {});
       });
-      this.lottery.purchased = parseFloat(
-        this.$web3.utils.fromWei(this.lottery.purchased, "ether")
-      ).toFixed(4);
-      this.lottery.contract.methods
+      await this.lottery.contract.methods
         .revealWinners()
         .call()
         .then((res) => {
@@ -249,6 +246,9 @@ export default {
           }
         })
         .catch(() => {});
+      this.lottery.purchased = parseFloat(
+        this.$web3.utils.fromWei(this.lottery.purchased, "ether")
+      ).toFixed(4);
     },
     getPurchasedEthCurrentPrice() {
       return (
@@ -307,7 +307,7 @@ export default {
         this.callResult.loading = true;
         const overralPrice = this.calculateDiscountForTickets();
         this.lottery.contract.methods
-          .buyTicket(overralPrice, this.lottery.amount)
+          .buyTicket(this.lottery.amount)
           .send({
             from: this.account,
             to: this.lottery.contract.options.address,
@@ -319,6 +319,7 @@ export default {
           .catch(() => {})
           .finally(() => {
             this.callResult.loading = false;
+            this.loadData()
           });
       }
     },
