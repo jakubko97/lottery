@@ -16,8 +16,8 @@ contract LotteryBuilder {
     }
     // Event that will be emitted whenever a new project is started
     event ProjectStarted(
-        address deployer,
         address contractAddress,
+        address deployer,
         address projectStarter,
         string projectTitle,
         string projectDesc,
@@ -34,7 +34,6 @@ contract LotteryBuilder {
      * @param ticketPrice Project goal in wei
      */
     function startProject(
-        address payable deployer,
         address payable creator,
         string calldata title,
         string calldata description,
@@ -45,7 +44,7 @@ contract LotteryBuilder {
     ) external {
         uint256 raiseUntil = deadlineDate;
         Lottery newProject = new Lottery(
-            deployer,
+            owner,
             creator,
             title,
             description,
@@ -57,7 +56,7 @@ contract LotteryBuilder {
         lotteries.push(newProject);
         emit ProjectStarted(
             address(newProject),
-            deployer,
+            owner,
             creator,
             title,
             description,
