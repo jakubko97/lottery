@@ -20,14 +20,13 @@ contract('Lottery', (accounts) => {
 
     let actualBalance
     await lottery.getBalance.call().then(function (balance) { actualBalance = balance });
-    assert.equal(actualBalance.words[0], expectedBalance, "Expected balance is not correct");
+    assert.equal(actualBalance, expectedBalance, "Expected balance is not correct");
   }
 
   async function assertTicketCount(expectedTicketCount) {
     const actualTicketCount = (await lottery.getTicketsCount.call()).toNumber();
     assert.equal(actualTicketCount, expectedTicketCount, "Expected tickets count is not correct");
   }
-
 
   async function assertEntrantCount(expectedEntrantCount) {
     const actualEntrantCount = (await lottery.getEntrantCount.call()).toNumber();
@@ -38,7 +37,6 @@ contract('Lottery', (accounts) => {
     const ticketPrice = (await lottery.getTicketPrice.call()).valueOf();
 
     let tickets = Math.floor(Math.random() * randomNumber) + 1; // Returns a random integer from 1 to 5:
-    //expectedTicketsCount = expectedTicketsCount + tickets
     let amount = ticketPrice * tickets
     await lottery.buyTicket(tickets, { from: entrant, value: amount })
 
@@ -92,17 +90,14 @@ contract('Lottery', (accounts) => {
     const getLotteryBalanceBefore = (await lottery.getBalance.call()).toNumber();
     const entrantCountBefore = (await lottery.getEntrantCount.call()).toNumber();
 
-    let tickets = Math.floor(Math.random() * 5) + 1;
+    let tickets = await enterIntoLotteryAndVerifyContractState(accountTwo, 1)
     let amount = ticketPrice * tickets
-    await lottery.buyTicket(tickets, { from: accounts[4], value: amount })
 
-    const getLotteryBalanceAfter = (await lottery.getBalance.call()).valueOf();
-    const entrantCount = (await lottery.getEntrantCount.call()).toNumber();
-
-    assert.equal(entrantCount, entrantCountBefore + 1, "Entrant count not correct");
-    assert.equal(getLotteryBalanceAfter, getLotteryBalanceBefore + amount, "Lottery balance is not correct");
+    await assertEntrantCount(entrantCountBefore + 1)
+    await assertContractBalance(getLotteryBalanceBefore + amount)
+    await assertTicketCount(tickets)
   });
-  it('pick winner with multiple entrants', async () => {
+  it('allows to pick winner with multiple entrants', async () => {
 
     await enterIntoLotteryAndVerifyContractState(accounts[1], 1)
     await enterIntoLotteryAndVerifyContractState(accounts[2], 2)
