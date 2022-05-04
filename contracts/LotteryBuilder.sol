@@ -9,7 +9,7 @@ contract LotteryBuilder {
 
     // List of existing projects
     Lottery[] private lotteries;
-    address public owner;
+    address payable public owner;
 
     constructor() {
         owner = msg.sender;
@@ -17,8 +17,8 @@ contract LotteryBuilder {
 
     // Event that will be emitted whenever a new project is started
     event ProjectStarted(
-        address deployer,
         address contractAddress,
+        address deployer,
         address projectStarter,
         string projectTitle,
         string projectDesc,
@@ -35,7 +35,6 @@ contract LotteryBuilder {
      * @param ticketPrice Project goal in wei
      */
     function startProject(
-        address payable deployer,
         address payable creator,
         string calldata title,
         string calldata description,
@@ -51,7 +50,7 @@ contract LotteryBuilder {
         require(totalPercent == 100, "The sum of prizes is not 100 (percent)");
         uint256 raiseUntil = deadlineDate;
         Lottery newProject = new Lottery(
-            deployer,
+            owner,
             creator,
             title,
             description,
@@ -63,7 +62,7 @@ contract LotteryBuilder {
         lotteries.push(newProject);
         emit ProjectStarted(
             address(newProject),
-            deployer,
+            owner,
             creator,
             title,
             description,
