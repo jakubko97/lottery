@@ -14,7 +14,6 @@ contract('Lottery', (accounts) => {
   const ticketLimit = 100
   const accountOne = accounts[0];
   let prizes = [70, 30]
-
   // helpers
   async function assertContractBalance(expectedBalance) {
 
@@ -45,6 +44,15 @@ contract('Lottery', (accounts) => {
     return tickets
   }
 
+  async function enterIntoLotteryWithMultipleEntrantsAndVerifyContractState() {
+    let expectedTicketCount = 0
+    expectedTicketCount += await enterIntoLotteryAndVerifyContractState(accounts[1], 1)
+    expectedTicketCount += await enterIntoLotteryAndVerifyContractState(accounts[2], 2)
+    expectedTicketCount += await enterIntoLotteryAndVerifyContractState(accounts[3], 3)
+    expectedTicketCount += await enterIntoLotteryAndVerifyContractState(accounts[4], 4)
+
+    await assertTicketCount(expectedTicketCount)
+  }
   beforeEach(async () => {
     // Setup lottery
 
@@ -83,7 +91,7 @@ contract('Lottery', (accounts) => {
     await lottery.kill({ from: accountOne });
   });
 
-  it('allow to buy ticket correctly', async () => {
+  it('allow to buy one ticket correctly', async () => {
     const accountTwo = accounts[1];
 
     const ticketPrice = (await lottery.getTicketPrice.call()).valueOf();
@@ -98,13 +106,7 @@ contract('Lottery', (accounts) => {
     await assertTicketCount(tickets)
   });
   it('allows to pick winner with multiple entrants', async () => {
-
-    await enterIntoLotteryAndVerifyContractState(accounts[1], 1)
-    await enterIntoLotteryAndVerifyContractState(accounts[2], 2)
-    await enterIntoLotteryAndVerifyContractState(accounts[3], 3)
-    await enterIntoLotteryAndVerifyContractState(accounts[4], 4)
-    await enterIntoLotteryAndVerifyContractState(accounts[5], 5)
-    await enterIntoLotteryAndVerifyContractState(accounts[6], 6)
+    await enterIntoLotteryWithMultipleEntrantsAndVerifyContractState()
 
     await lottery.pickWinner({ from: accountOne })
 
@@ -134,9 +136,7 @@ contract('Lottery', (accounts) => {
     );
   });
   it('prevents entry into the lottery if winner is already selected', async () => {
-    await enterIntoLotteryAndVerifyContractState(accounts[3], 1)
-    await enterIntoLotteryAndVerifyContractState(accounts[4], 2)
-    await enterIntoLotteryAndVerifyContractState(accounts[5], 3)
+    await enterIntoLotteryWithMultipleEntrantsAndVerifyContractState()
     await lottery.pickWinner({ from: accountOne })
 
     await truffleAssert.reverts(lottery.buyTicket(1, { from: accounts[2], value: ticketPrice }),
@@ -155,12 +155,11 @@ contract('Lottery', (accounts) => {
     await assertContractBalance(0);
 
   });
-  it('prevents picking winner after when lottery closed', async () => {
-    await enterIntoLotteryAndVerifyContractState(accounts[1], 1);
-    await enterIntoLotteryAndVerifyContractState(accounts[2], 2);
-    await enterIntoLotteryAndVerifyContractState(accounts[3], 3);
+  it('prevents picking winner when lottery state is closed', async () => {
+    await enterIntoLotteryWithMultipleEntrantsAndVerifyContractState()
 
     await lottery.pickWinner({ from: accountOne })
+
     await truffleAssert.reverts(lottery.pickWinner({ from: accountOne }), "Winner has already been selected")
   });
 });

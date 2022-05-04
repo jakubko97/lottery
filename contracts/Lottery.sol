@@ -71,6 +71,12 @@ contract Lottery {
         uint256[] memory lotteryRewards,
         uint256 lotteryLimitTickets
     ) {
+        // this is for testing
+        uint256 totalPercent = 0;
+        for (uint256 i = 0; i < rewards.length; i++) {
+            totalPercent += rewards[i];
+        }
+        require(totalPercent == 100, "The sum of prizes is not 100 (percent)");
         deployer = projectDeployer;
         creator = projectStarter;
         title = projectTitle;
