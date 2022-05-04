@@ -53,7 +53,7 @@ contract('Lottery', (accounts) => {
 
     await assertTicketCount(expectedTicketCount)
   }
-  beforeEach(async () => {
+  beforeEach('should create lottery instance and validate parameters', async () => {
     // Setup lottery
 
     const title = 'title'
@@ -91,7 +91,7 @@ contract('Lottery', (accounts) => {
     await lottery.kill({ from: accountOne });
   });
 
-  it('allow to buy one ticket correctly', async () => {
+  it('allows to buy one ticket correctly', async () => {
     const accountTwo = accounts[1];
 
     const ticketPrice = (await lottery.getTicketPrice.call()).valueOf();
@@ -127,7 +127,7 @@ contract('Lottery', (accounts) => {
     await truffleAssert.reverts(lottery.buyTicket(ticketLimit + 1, { from: accounts[4], value: amount }),
       'Entered tickets should not be over the limit ticket by address')
   });
-  it("should not be able to enter without sending ether", async () => {
+  it("prevents to not be able to enter lottery with sending zero ether", async () => {
     let tickets = 0
     let amount = 0
 

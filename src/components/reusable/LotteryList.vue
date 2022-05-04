@@ -13,9 +13,9 @@
           :lottery="lottery"
         />
       </v-col>
-      <!-- <div v-if="!callResult.loading && projectData.length == 0">
+      <div class="headline secondary--text" v-if="!callResult.loading && projectData.length == 0">
           NO {{ closedOpenLabel() }} LOTTERIES
-        </div> -->
+        </div>
     </v-row>
   </v-container>
 </template>

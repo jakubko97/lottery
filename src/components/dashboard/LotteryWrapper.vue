@@ -1,6 +1,5 @@
 <template>
   <v-container>
-    <v-list>
       <LotteryList
         :call-result="callResult"
         :ethereumData="ethereumData != null ? ethereumData[0] : null"
@@ -12,7 +11,6 @@
         :project-addresses="projectAddresses"
         class="ma-2"
       />
-    </v-list>
   </v-container>
 </template>
 

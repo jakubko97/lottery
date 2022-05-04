@@ -1,16 +1,12 @@
 <template>
   <v-app id="fei_dp_lottery">
-    <app-app-bar v-if="account" @switch-drawer="switchDrawer"></app-app-bar>
-    <app-app-page
-      v-if="account && !loadingAccounts"
-      :account="account"
-    ></app-app-page>
-    <app-landing-page v-if="!account && !loadingAccounts"></app-landing-page>
+    <app-app-bar v-if="!isMobile" />
+    <app-app-page :account="account"></app-app-page>
+    <app-app-bottom-bar v-if="isMobile" />
   </v-app>
 </template>
 
 <script>
-
 export default {
   name: "App",
 
@@ -21,6 +17,7 @@ export default {
       drawer: true,
       account: "",
       loadingAccounts: true,
+      isMobile: false,
     };
   },
   created() {
@@ -35,15 +32,21 @@ export default {
       })
       .finally(() => {
         this.loadingAccounts = false;
-      })
+      });
   },
-  methods: {
-    handleAccountsChanged() {
-      // We recommend reloading the page, unless you must do otherwise
-      window.location.reload();
+  beforeDestroy () {
+      if (typeof window === 'undefined') return
+
+      window.removeEventListener('resize', this.onResize, { passive: true })
     },
-    switchDrawer(val) {
-      this.drawer = val;
+  mounted () {
+      this.onResize()
+
+      window.addEventListener('resize', this.onResize, { passive: true })
+    },
+  methods: {
+    onResize() {
+      this.isMobile = window.innerWidth < 600;
     },
     metaInfo() {
       return {
@@ -61,10 +64,3 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
-::v-deep {
-  .v-expansion-panel-content__wrap {
-    padding: 0px 12px 12px 12px !important;
-  }
-}
-</style>
