@@ -152,7 +152,6 @@ RewardsBuilderDialog
           this.newProject.description,
           this.newProject.deadline,
           this.$web3.utils.toWei(this.newProject.ticketPrice, "ether"),
-          this.retrieveRewards().length,
           this.retrieveRewards(),
           this.newProject.limitTickets
         )

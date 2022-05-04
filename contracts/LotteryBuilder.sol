@@ -9,7 +9,7 @@ contract LotteryBuilder {
 
     // List of existing projects
     Lottery[] private lotteries;
-    address public owner;
+    address payable public owner;
 
     constructor() {
         owner = msg.sender;
