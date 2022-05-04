@@ -56,8 +56,15 @@ export default {
   },
   methods: {
     async getProjects() {
-      console.log(createLottery)
-      createLottery.methods
+      // await createLottery.methods
+      //   .getOwner()
+      //   .call()
+      //   .then((res) => {
+      //     console.log(res);
+      //   })
+      //   .catch((e) => {})
+      //   .finally(() => {});
+      await createLottery.methods
         .returnAllLotteries()
         .call()
         .then((res) => {

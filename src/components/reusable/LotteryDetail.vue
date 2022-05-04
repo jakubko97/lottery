@@ -6,30 +6,29 @@
         class="timer"
         :date="formatDateToTimer(lottery.deadlineTime)"
       />
-      <v-card-title>{{ lottery.projectTitle }}</v-card-title>
+      <v-card-title>{{ lottery.id }}</v-card-title>
       <v-card-text>
         <div v-if="lottery.projectStarter == account">ADMIN</div>
         <div>
-          <v-icon class="mr-2" color="primary">mdi-cash</v-icon>
+          <v-icon class="mr-2" color="accent">mdi-cash</v-icon>
           Price {{ lottery.ticketPrice }} ETH
         </div>
         <div>
-          <v-icon class="mr-2" color="primary">mdi-account-multiple</v-icon>
+          <v-icon class="mr-2" color="accent">mdi-account-multiple</v-icon>
           {{ numberOfPlayers }} participated
         </div>
          <div>
-          <v-icon class="mr-2" color="primary">mdi-trophy-award</v-icon>
+          <v-icon class="mr-2" color="accent">mdi-trophy-award</v-icon>
           {{ lottery.lotteryRewards }}
         </div>
         <div>
-          <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
+          <v-icon class="mr-2" color="accent">mdi-bank</v-icon>
           Bank {{ getCurrentAmount() }} ETH
         </div>
         <div>
-          <v-icon class="mr-2" color="primary">mdi-timer-sand</v-icon>
+          <v-icon class="mr-2" color="accent">mdi-timer-sand</v-icon>
           {{ getDateFormat(lottery.deadlineTime) }}
         </div>
-        <div class="subtitle">Description: {{ lottery.projectDesc }}</div>
 
         <v-divider class="ma-2 pa-2"></v-divider>
         <v-row>
@@ -39,7 +38,7 @@
               :size="100"
               :width="15"
               :value="winProbability"
-              color="primary"
+              color="accent"
               >{{ winProbability }} %</v-progress-circular
             >
             <span class="ml-4"
@@ -108,7 +107,7 @@
             <v-btn
               v-if="lottery.deadlineTime > new Date().getTime()"
               depressed
-              color="primary"
+              color="accent"
               :loading="callResult.loading"
               @click.prevent="buyTicket()"
               >{{ showPayAmount() }} Pay</v-btn
@@ -126,7 +125,7 @@
             <v-btn
               v-if="!callResult.drawLoading"
               depressed
-              color="primary"
+              color="accent"
               @click.prevent="drawWinner()"
               >DRAW</v-btn
             >

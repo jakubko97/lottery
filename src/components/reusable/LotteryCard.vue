@@ -7,7 +7,7 @@
     height="300"
   >
     <v-card-title class="white--text subtitle-2">{{
-      lottery.projectTitle
+      lottery.id
     }}</v-card-title>
     <v-card-text>
       <v-row class="text-center">

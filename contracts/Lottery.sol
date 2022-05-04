@@ -15,14 +15,13 @@ enum State {
 contract Lottery {
     using SafeMath for uint256;
     // State variables
-    address payable public deployer;
+    address public deployer;
     address payable public creator;
-    uint256 public priceTicket; // required to reach at least this much, else everyone gets refund
+    uint256 public priceTicket;
     uint256 public created;
     uint256 public currentBalance;
     uint256 public deadline;
-    string public title;
-    string public description;
+    uint256 public id;
     State public state = State.Open; // initialize on create
     mapping(address => uint256) public contributors;
     address[] public players;
@@ -64,23 +63,21 @@ contract Lottery {
     constructor(
         address payable projectDeployer,
         address payable projectStarter,
-        string memory projectTitle,
-        string memory projectDesc,
+        uint256 projectId,
         uint256 deadlineTime,
         uint256 projectTicketPrice,
         uint256[] memory lotteryRewards,
         uint256 lotteryLimitTickets
     ) {
         // this is for testing
-        uint256 totalPercent = 0;
-        for (uint256 i = 0; i < rewards.length; i++) {
-            totalPercent += rewards[i];
-        }
-        require(totalPercent == 100, "The sum of prizes is not 100 (percent)");
+        // uint256 totalPercent = 0;
+        // for (uint256 i = 0; i < rewards.length; i++) {
+        //     totalPercent += uint256(rewards[i]);
+        // }
+        // require(totalPercent == 100, "The sum of prizes is not 100 (percent)");
         deployer = projectDeployer;
         creator = projectStarter;
-        title = projectTitle;
-        description = projectDesc;
+        id = projectId;
         priceTicket = projectTicketPrice;
         deadline = deadlineTime;
         currentBalance = 0;
@@ -92,14 +89,6 @@ contract Lottery {
 
     function getContractAddress() public view returns (address) {
         return address(this);
-    }
-
-    function getTitle() public view returns (string memory) {
-        return title;
-    }
-
-    function getDescription() public view returns (string memory) {
-        return description;
     }
 
     function getTicketPrice() public view returns (uint256) {
@@ -134,12 +123,12 @@ contract Lottery {
         return tickets;
     }
 
-    function getWinner(uint256 id) public view returns (address) {
-        return winners[id].account;
+    function getWinner(uint256 index) public view returns (address) {
+        return winners[index].account;
     }
 
-    function getWinnerAmount(uint256 id) public view returns (uint256) {
-        return winners[id].amount;
+    function getWinnerAmount(uint256 index) public view returns (uint256) {
+        return winners[index].amount;
     }
 
     function getNumberOfWinners() public view returns (uint256) {
@@ -419,8 +408,7 @@ contract Lottery {
         view
         returns (
             address payable projectStarter,
-            string memory projectTitle,
-            string memory projectDesc,
+            uint256 projectId,
             uint256 deadlineTime,
             State currentState,
             uint256 currentAmount,
@@ -432,8 +420,7 @@ contract Lottery {
         )
     {
         projectStarter = creator;
-        projectTitle = title;
-        projectDesc = description;
+        projectId = id;
         deadlineTime = deadline;
         currentState = state;
         currentAmount = currentBalance;

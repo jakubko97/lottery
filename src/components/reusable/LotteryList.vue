@@ -6,14 +6,14 @@
       <v-skeleton-loader type="card"></v-skeleton-loader>
     </v-sheet>
     <v-row justify="center">
-      <v-col v-for="lottery in projectData" :key="lottery.projectTitle">
+      <v-col v-for="lottery in projectData" :key="lottery.id">
         <LotteryCard
           :ethereumData="ethereumData"
           :archive="archive"
           :lottery="lottery"
         />
       </v-col>
-      <div class="headline secondary--text" v-if="!callResult.loading && projectData.length == 0">
+      <div class="headline primary--text" v-if="!callResult.loading && projectData.length == 0">
           NO {{ closedOpenLabel() }} LOTTERIES
         </div>
     </v-row>

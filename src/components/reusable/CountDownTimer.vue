@@ -1,5 +1,5 @@
 <template id="countdown-template">
-  <v-card color="blue lighten-1" elevation="0" class="countdown">
+  <v-card color="primary" elevation="0" class="countdown">
     <div class="block">
       <p class="digit">{{ days | two_digits }}</p>
       <p class="text">Days</p>
@@ -77,6 +77,7 @@ export default {
   font-weight: 20;
   margin-top: 6px;
   margin-bottom: 2px;
+  color: white;
   text-align: center;
 }
 
