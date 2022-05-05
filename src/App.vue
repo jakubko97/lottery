@@ -21,18 +21,18 @@ export default {
     };
   },
   created() {
-    window.ethereum.on("accountsChanged", this.handleAccountsChanged);
-    this.$web3.eth
-      .getAccounts()
-      .then((accounts) => {
-        [this.account] = accounts;
-      })
-      .catch((e) => {
-        console.error(e);
-      })
-      .finally(() => {
-        this.loadingAccounts = false;
-      });
+    // window.ethereum.on("accountsChanged", this.handleAccountsChanged);
+    // this.$web3.eth
+    //   .getAccounts()
+    //   .then((accounts) => {
+    //     [this.account] = accounts;
+    //   })
+    //   .catch((e) => {
+    //     console.error(e);
+    //   })
+    //   .finally(() => {
+    //     this.loadingAccounts = false;
+    //   });
   },
   beforeDestroy () {
       if (typeof window === 'undefined') return

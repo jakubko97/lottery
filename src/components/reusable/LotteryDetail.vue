@@ -6,32 +6,55 @@
         class="timer"
         :date="formatDateToTimer(lottery.deadlineTime)"
       />
-      <v-card-title>{{ lottery.id }}</v-card-title>
+      <v-card-title>{{ '#' + ('000' + lottery.projectId).substr(-3) }}</v-card-title>
       <v-card-text>
-        <div v-if="lottery.projectStarter == account">ADMIN</div>
-        <div>
-          <v-icon class="mr-2" color="accent">mdi-cash</v-icon>
-          Price {{ lottery.ticketPrice }} ETH
-        </div>
-        <div>
-          <v-icon class="mr-2" color="accent">mdi-account-multiple</v-icon>
-          {{ numberOfPlayers }} participated
-        </div>
-         <div>
-          <v-icon class="mr-2" color="accent">mdi-trophy-award</v-icon>
-          {{ lottery.lotteryRewards }}
-        </div>
-        <div>
-          <v-icon class="mr-2" color="accent">mdi-bank</v-icon>
-          Bank {{ getCurrentAmount() }} ETH
-        </div>
-        <div>
-          <v-icon class="mr-2" color="accent">mdi-timer-sand</v-icon>
-          {{ getDateFormat(lottery.deadlineTime) }}
-        </div>
-
-        <v-divider class="ma-2 pa-2"></v-divider>
         <v-row>
+          <v-col>
+            <v-list>
+              <div>
+                <v-icon class="mr-2" color="accent">mdi-cash</v-icon>
+                Price {{ lottery.ticketPrice }} ETH
+              </div>
+              <div>
+                <v-icon class="mr-2" color="accent"
+                  >mdi-account-multiple</v-icon
+                >
+                {{ numberOfPlayers }} participated
+              </div>
+              <div>
+                <v-icon class="mr-2" color="accent">mdi-bank</v-icon>
+                Bank {{ getCurrentAmount() }} ETH
+              </div>
+              <div>
+                <v-icon class="mr-2" color="accent">mdi-timer-sand</v-icon>
+                {{ getDateFormat(lottery.deadlineTime) }}
+              </div>
+            </v-list>
+          </v-col>
+
+          <v-col>
+            <v-list>
+                <v-list-item
+                  dense
+                  inactive
+                  :ripple="false"
+                  v-for="(item, i) in lottery.lotteryRewards"
+                  :key="i"
+                >
+                  <v-list-item-icon>
+                    <v-icon class="mr-2" color="accent"
+                      >mdi-trophy-award</v-icon
+                    >
+                  </v-list-item-icon>
+                  <v-list-item-content>
+                    {{ printPrize(i + 1, item) }}
+                  </v-list-item-content>
+                </v-list-item>
+            </v-list>
+          </v-col>
+        </v-row>
+        <v-divider class="ma-2 pa-2"></v-divider>
+        <v-row v-if="ticketsBought != 0">
           <v-col>
             <v-progress-circular
               :rotate="360"
@@ -48,7 +71,7 @@
           </v-col>
         </v-row>
 
-        <v-divider class="ma-2 pa-2"></v-divider>
+        <v-divider v-if="ticketsBought != 0" class="ma-2 pa-2"></v-divider>
 
         <v-list v-if="winners.length != 0" two-line>
           <v-icon class="mr-2" color="orange">mdi-trophy</v-icon>Winners:
@@ -79,7 +102,7 @@
               </v-btn>
             </template>
             <span v-for="item in discount" :key="item.tickets">
-            {{ item.tickets }} tickets for {{ item.percent}}
+              {{ item.tickets }} tickets for {{ item.percent }} %<br>
             </span>
           </v-tooltip>
         </p>
@@ -129,7 +152,12 @@
               @click.prevent="drawWinner()"
               >DRAW</v-btn
             >
-            <img v-else height="200px" width="300px" src="../../assets/drawing.gif" />
+            <img
+              v-else
+              height="200px"
+              width="300px"
+              src="../../assets/drawing.gif"
+            />
           </v-col>
         </v-row>
       </v-card-text>
@@ -165,16 +193,17 @@ export default {
       rules: {
         amount: [(val) => val > 10 || `Max is 10 tickets per account!`],
       },
-      discount: [ {tickets: 2, percent: 5},
-      {tickets: 3, percent: 7.5},
-      {tickets: 4, percent: 10},
-      {tickets: 5, percent: 12.5},
-      {tickets: 6, percent: 15},
-      {tickets: 7, percent: 17.5},
-      {tickets: 8, percent: 20},
-      {tickets: 9, percent: 22.5},
-      {tickets: 10, percent: 25}
-      ]
+      discount: [
+        { tickets: 2, percent: 5 },
+        { tickets: 3, percent: 7.5 },
+        { tickets: 4, percent: 10 },
+        { tickets: 5, percent: 12.5 },
+        { tickets: 6, percent: 15 },
+        { tickets: 7, percent: 17.5 },
+        { tickets: 8, percent: 20 },
+        { tickets: 9, percent: 22.5 },
+        { tickets: 10, percent: 25 },
+      ],
     };
   },
   mounted() {
@@ -310,19 +339,22 @@ export default {
           .send({
             from: this.account,
             to: this.lottery.contract.options.address,
-            value: overralPrice
-                      })
-          .then((res) => {
-            console.log(res.data);
+            value: overralPrice,
           })
+          .then((res) => {})
           .catch(() => {})
           .finally(() => {
             this.callResult.loading = false;
-            this.loadData()
+            this.loadData();
           });
       }
     },
 
+    printPrize(index, prize) {
+      let string = "";
+      string += index + ". prize " + prize + "% ";
+      return string;
+    },
     drawWinner() {
       this.callResult.drawLoading = true;
       this.lottery.contract.methods
@@ -330,9 +362,7 @@ export default {
         .send({
           from: this.account,
         })
-        .then((res) => {
-          console.log(res.data);
-        })
+        .then((res) => {})
         .catch(() => {})
         .finally(() => {
           this.callResult.drawLoading = false;

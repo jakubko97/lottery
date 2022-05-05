@@ -2,7 +2,7 @@
   <v-card
     class="rounded-lg"
     style="width: 450px"
-    color="blue lighten-1"
+    color="secondary"
     elevation="0"
     height="300"
   >

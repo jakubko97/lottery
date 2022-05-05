@@ -190,7 +190,7 @@ export default {
     truncateStart(str) {
       return str ? str.substr(0, 18) + "..." : ''
     },
-    async getAllTransactions() {
+    getAllTransactions() {
       this.transactions = [];
       this.loading = true;
       Array.from(this.projectAddresses, async (address) => {
@@ -199,13 +199,13 @@ export default {
           .then((res) => {
             if(res.data != null){
             this.transactions = this.transactions.concat(res.data.result);
-            Array.from(this.transactions, (item) => {
-              item.age = new Date(item.timeStamp * 1000);
-              item.dateTime = this.getDateFormat(item.timeStamp);
-              const decodedData = this.decodeInputData(item.input);
-              item.method = decodedData.name;
-              if (decodedData.params.length != 0) {
-                item.tickets = decodedData.params[1].value;
+            Array.from(this.transactions, async (item) => {
+              item.age = await new Date(item.timeStamp * 1000);
+              item.dateTime = await this.getDateFormat(item.timeStamp);
+              const decodedData = await this.decodeInputData(item.input);
+              item.method = await decodedData.name;
+                if (decodedData.params.length != 0) {
+                item.tickets = await decodedData.params[0].value;
               }
             });
             }

@@ -69,7 +69,6 @@ export default {
         .call()
         .then((res) => {
           this.projectAddresses = res;
-          console.log(res);
         })
         .catch((e) => {})
         .finally(() => {});
@@ -103,7 +102,6 @@ export default {
                 console.log(e);
               })
               .finally(() => {
-                this.callResult.finished = true;
               });
 
             projectInst.methods

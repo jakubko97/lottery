@@ -48,13 +48,15 @@
         :loading="!callResult.finished"
       >
         <template #[`item.funds`]="{ item }">
-        {{ parseFloat($web3.utils.fromWei(item.funds, "ether")).toFixed(5) }}
+          {{ parseFloat($web3.utils.fromWei(item.funds, "ether")).toFixed(5) }}
         </template>
-            <template #[`item.amountWon`]="{ item }">
-        {{ parseFloat($web3.utils.fromWei(item.amountWon, "ether")).toFixed(5) }}
+        <template #[`item.amountWon`]="{ item }">
+          {{
+            parseFloat($web3.utils.fromWei(item.amountWon, "ether")).toFixed(5)
+          }}
         </template>
-            <template #[`item.state`]="{ item }">
-        {{ getState(item.state) }}
+        <template #[`item.state`]="{ item }">
+          {{ getState(item.state) }}
         </template>
       </v-data-table>
     </v-card>
@@ -70,7 +72,12 @@ export default {
   data() {
     return {
       account: null,
-      callResult: { finished: true, authorized: false, error: null, info: null },
+      callResult: {
+        finished: true,
+        authorized: false,
+        error: null,
+        info: null,
+      },
       search: "",
       headers: [
         {
@@ -97,7 +104,7 @@ export default {
           sortable: true,
           value: "state",
         },
-         {
+        {
           text: "Won",
           align: "start",
           sortable: false,
@@ -108,7 +115,7 @@ export default {
           align: "start",
           sortable: true,
           value: "amountWon",
-        }
+        },
       ],
       profileInfo: { lotteryParticipated: [], rewardsWon: 0 },
     };
@@ -118,63 +125,61 @@ export default {
   },
   methods: {
     getState(state) {
-      return state == 0 ? "Open" : "Closed"
+      return state == 0 ? "Open" : "Closed";
     },
-    getData() {
-      this.$web3.eth.getAccounts().then((accounts) => {
+    async getData() {
+      this.callResult.finished = false
+      await this.$web3.eth.getAccounts().then(async (accounts) => {
         [this.account] = accounts;
-        this.callResult.finished = false
-        createLottery.methods
-          .participatedByAddress(this.account)
-          .call()
-          .then((res) => {
-            for (let i = 0; i < res[0].length; i++) {
-              this.winner = {};
-              let array = res[0];
-              let array2 = res[1];
-              let array3 = res[2];
-              let array4 = res[3];
-              let array5 = res[4];
-              let array6 = res[5];
-
-              let participated = {};
-              participated.address = array[i];
-              participated.funds = array2[i];
-              participated.tickets = array3[i];
-              participated.state = array4[i];
-              participated.won = array5[i];
-              participated.amountWon = array6[i];
-              this.profileInfo.lotteryParticipated.push(participated);
-              this.callResult.finished = true
-            }
-          })
-          .catch((e) => {
-            this.callResult.error = e
-          })
-          .finally(() => this.callResult.finished = true);
-
-        createLottery.methods
-          .getRewardsWonByAddress(this.account)
-          .call()
-          .then((rewardsWon) => {
-            this.profileInfo.rewardsWon = this.$web3.utils.fromWei(
-              rewardsWon,
-              "ether"
-            );
-
-            createLottery.methods
-              .getSpentState(this.account)
-              .call()
-              .then((spent) => {
-                this.profileInfo.rewardsWon -= this.$web3.utils.fromWei(
-                  spent,
-                  "ether"
-                );
-                this.profileInfo.rewardsWon =
-                  this.profileInfo.rewardsWon.toFixed(4);
-              });
-          });
       });
+      await createLottery.methods
+        .participatedByAddress(this.account)
+        .call()
+        .then((res) => {
+          for (let i = 0; i < res[0].length; i++) {
+            this.winner = {};
+            let array = res[0];
+            let array2 = res[1];
+            let array3 = res[2];
+            let array4 = res[3];
+            let array5 = res[4];
+            let array6 = res[5];
+
+            let participated = {};
+            participated.address = array[i];
+            participated.funds = array2[i];
+            participated.tickets = array3[i];
+            participated.state = array4[i];
+            participated.won = array5[i];
+            participated.amountWon = array6[i];
+            this.profileInfo.lotteryParticipated.push(participated);
+            this.callResult.finished = true;
+          }
+        })
+        .catch((e) => {
+          this.callResult.error = e;
+        })
+
+      await createLottery.methods
+        .getRewardsWonByAddress(this.account)
+        .call()
+        .then((rewardsWon) => {
+          this.profileInfo.rewardsWon = this.$web3.utils.fromWei(
+            rewardsWon,
+            "ether"
+          );
+        });
+      await createLottery.methods
+        .getSpentState(this.account)
+        .call()
+        .then((spent) => {
+          this.profileInfo.rewardsWon -= this.$web3.utils.fromWei(
+            spent,
+            "ether"
+          );
+          this.profileInfo.rewardsWon = this.profileInfo.rewardsWon.toFixed(4);
+        });
+      this.callResult.finished = true
     },
   },
 };

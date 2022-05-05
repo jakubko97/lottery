@@ -32,12 +32,18 @@
     </template>
 
     <v-spacer />
+     <CustomSnackBar ref="snackBarDialog" />
   </v-app-bar>
 </template>
 
 <script>
+import CustomSnackBar from "@/components/reusable/CustomSnackBar";
+
 export default {
   name: "AppBar",
+  components: {
+    CustomSnackBar
+  },
   data() {
     return {
       drawer: true,
@@ -82,6 +88,11 @@ export default {
             console.error(err);
           }
         });
+    },
+    checkAccount(){
+      if(!this.account){
+        this.$refs.snackBarDialog.open()
+      }
     },
     createProject() {
       this.$router.push("/CreateProject");

@@ -5,7 +5,7 @@
     <v-sheet v-if="callResult.loading" :color="`grey lighten-2`" class="pa-3">
       <v-skeleton-loader type="card"></v-skeleton-loader>
     </v-sheet>
-    <v-row justify="center">
+    <v-row justify="center" style="text-align: -webkit-center;">
       <v-col v-for="lottery in projectData" :key="lottery.id">
         <LotteryCard
           :ethereumData="ethereumData"

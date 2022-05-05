@@ -9,7 +9,9 @@
 
         <v-divider></v-divider>
 
-        <v-stepper-step editable :complete="e1 > 2" step="2"> Prizes </v-stepper-step>
+        <v-stepper-step editable :complete="e1 > 2" step="2">
+          Prizes
+        </v-stepper-step>
 
         <v-divider></v-divider>
 
@@ -18,7 +20,7 @@
 
       <v-stepper-items>
         <v-stepper-content step="1">
-          <v-card class="mb-12" elevation="0">
+          <v-card width="650" class="mb-12" elevation="0">
             <v-card-text class="pt-0">
               <v-row class="pt-0">
                 <v-col md="6" cols="12">
@@ -41,13 +43,13 @@
             </v-card-text>
           </v-card>
 
-          <v-btn color="primary" @click="e1 = 2"> Continue </v-btn>
-
-          <v-btn text> Cancel </v-btn>
+          <v-btn class="float-right" color="primary" @click="e1 = 2">
+            Continue
+          </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="2">
-          <v-card elevation="0" class="mb-12">
+          <v-card width="650" elevation="0" class="mb-12">
             <RewardsBuilderDialog
               @push-element="addReward"
               @delete-element="deleteReward"
@@ -55,13 +57,15 @@
             />
           </v-card>
 
-          <v-btn color="primary" @click="e1 = 3"> Continue </v-btn>
+          <v-btn color="primary" class="float-right" @click="e1 = 3">
+            Continue
+          </v-btn>
 
-          <v-btn text> Cancel </v-btn>
+          <v-btn @click="e1 = 1" text> Back </v-btn>
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <v-card elevation="0" class="mb-12" height="375px">
+          <v-card width="650" elevation="0" class="mb-12" height="375px">
             <v-card-text class="pt-0">
               <v-row>
                 <v-col class="" md="12">
@@ -80,17 +84,25 @@
             </v-card-text>
           </v-card>
 
-          <v-btn color="primary" :loading="newProject.isLoading" @click="startProject()"> Submit </v-btn>
+          <v-btn
+            class="float-right"
+            color="primary"
+            :loading="newProject.isLoading"
+            @click="startProject()"
+          >
+            Submit
+          </v-btn>
 
-          <v-btn text> Cancel </v-btn>
+          <v-btn @click="e1 = 2" text> Back </v-btn>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
-
+    <CustomSnackBar ref="snackBarDialog" />
   </div>
 </template>
 
 <script>
+import CustomSnackBar from "@/components/reusable/CustomSnackBar";
 import createLottery from "../../contracts/BuildLotteryInstance";
 import lottery from "../../contracts/lotteryInstance";
 import RewardsBuilderDialog from "@/components/reusable/RewardsBuilderDialog";
@@ -98,25 +110,28 @@ import RewardsBuilderDialog from "@/components/reusable/RewardsBuilderDialog";
 export default {
   name: "CreateProject",
   components: {
+    CustomSnackBar,
     RewardsBuilderDialog,
   },
-  data: () => ({
-    nowDate: new Date().toISOString().slice(0, 10),
-    nowTime: new Date().toISOString().substring(11, 16),
-    date: null,
-    time: null,
-    e1: 1,
-    account: null,
-
-    newProject: {
-      limitTicketsEnabled: false,
-      isLoading: false,
-      rewards: [
-        { id: 1, value: 70 },
-        { id: 2, value: 30 },
-      ],
-    },
-  }),
+  data() {
+    return {
+      nowDate: new Date().toISOString().slice(0, 10),
+      nowTime: new Date().toISOString().substring(11, 16),
+      date: null,
+      time: null,
+      e1: 1,
+      account: null,
+      modelSnackBar: false,
+      newProject: {
+        limitTicketsEnabled: false,
+        isLoading: false,
+        rewards: [
+          { id: 1, value: 70 },
+          { id: 2, value: 30 },
+        ],
+      },
+    };
+  },
   mounted() {
     // this code snippet takes the account (wallet) that is currently active
     this.$web3.eth.getAccounts().then((accounts) => {
@@ -141,42 +156,41 @@ export default {
       return arr;
     },
     async startProject() {
-      this.newProject.deadline = new Date(
-        this.date + "T" + this.time + ":00"
-      ).getTime();
-      this.newProject.deadline = this.newProject.deadline / 1000;
-      this.newProject.isLoading = true;
-      await createLottery.methods
-        .startProject(
-          (this.newProject.owner = this.account),
-          this.newProject.deadline,
-          this.$web3.utils.toWei(this.newProject.ticketPrice, "ether"),
-          this.retrieveRewards(),
-          this.newProject.limitTickets
-        )
-        .send({
-          from: this.account,
-        })
-        .then((res) => {
-          this.newProject.isLoading = false;
-          const projectInfo = res.events.ProjectStarted.returnValues;
-          projectInfo.currentAmount = 0;
-          projectInfo.currentState = 0;
-          projectInfo.deadlineTime =
-            projectInfo.deadlineTime.toString() + "000";
-          projectInfo.contract = lottery(projectInfo.contractAddress);
-          //this.projectData.push(projectInfo);
-          this.$router.go("/");
-        })
-        .catch(() => {
-          this.newProject.isLoading = false;
-        });
-    },
-    closeDialog() {
-      this.dialog = false;
-      this.newProject.ticketPrice = "";
-      this.newProject.deadline = "";
-    },
+      if (this.account) {
+        this.newProject.deadline = new Date(
+          this.date + "T" + this.time + ":00"
+        ).getTime();
+        this.newProject.deadline = this.newProject.deadline / 1000;
+        this.newProject.isLoading = true;
+        await createLottery.methods
+          .startProject(
+            (this.newProject.owner = this.account),
+            this.newProject.deadline,
+            this.$web3.utils.toWei(this.newProject.ticketPrice, "ether"),
+            this.retrieveRewards(),
+            this.newProject.limitTickets
+          )
+          .send({
+            from: this.account,
+          })
+          .then((res) => {
+            this.newProject.isLoading = false;
+            const projectInfo = res.events.ProjectStarted.returnValues;
+            projectInfo.currentAmount = 0;
+            projectInfo.currentState = 0;
+            projectInfo.deadlineTime =
+              projectInfo.deadlineTime.toString() + "000";
+            projectInfo.contract = lottery(projectInfo.contractAddress);
+            //this.projectData.push(projectInfo);
+            this.$router.go("/");
+          })
+          .catch(() => {
+            this.newProject.isLoading = false;
+          });
+      } else {
+        this.$refs.snackBarDialog.open()
+      }
+    }
   },
 };
 </script>
