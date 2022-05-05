@@ -51,13 +51,18 @@
         <v-stepper-content step="2">
           <v-card width="650" elevation="0" class="mb-12">
             <RewardsBuilderDialog
+              ref="rewardsBuilder"
               @push-element="addReward"
               @delete-element="deleteReward"
               :rewards="newProject.rewards"
             />
           </v-card>
 
-          <v-btn color="primary" class="float-right" @click="e1 = 3">
+          <v-btn
+            color="primary"
+            class="float-right"
+            @click="rewardsFormConfirm()"
+          >
             Continue
           </v-btn>
 
@@ -97,7 +102,10 @@
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
-    <CustomSnackBar ref="snackBarDialog" />
+    <CustomSnackBar
+      message="Please connect wallet to proceeded."
+      ref="snackBarDialog"
+    />
   </div>
 </template>
 
@@ -148,6 +156,11 @@ export default {
         (item) => item.id !== id
       );
     },
+    rewardsFormConfirm() {
+      if (this.$refs.rewardsBuilder.isValid()) {
+        this.e1 = 3;
+      }
+    },
     retrieveRewards() {
       const arr = [];
       Array.from(this.newProject.rewards, (reward) => {
@@ -188,9 +201,9 @@ export default {
             this.newProject.isLoading = false;
           });
       } else {
-        this.$refs.snackBarDialog.open()
+        this.$refs.snackBarDialog.open();
       }
-    }
+    },
   },
 };
 </script>

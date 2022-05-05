@@ -32,17 +32,14 @@
     </template>
 
     <v-spacer />
-     <CustomSnackBar ref="snackBarDialog" />
   </v-app-bar>
 </template>
 
 <script>
-import CustomSnackBar from "@/components/reusable/CustomSnackBar";
 
 export default {
   name: "AppBar",
   components: {
-    CustomSnackBar
   },
   data() {
     return {

@@ -1,6 +1,6 @@
 <template>
   <v-snackbar v-model="snackbar" :multi-line="multiLine">
-    {{ snackBarText }}
+    {{ message }}
 
     <template v-slot:action="{ attrs }">
       <v-btn color="red" text v-bind="attrs" @click="snackbar = false">
@@ -13,11 +13,16 @@
 <script>
 export default {
   name: "CustomSnackBar",
+  props: {
+    message: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
       multiLine: true,
       snackbar: false,
-      snackBarText: `Please connect wallet to proceeded.`,
     };
   },
   methods: {

@@ -10,11 +10,11 @@
             v-if="loadingState.finished"
           >
             <v-col
-              :cols="getColumnSize(lottery.length)"
+              :cols="$vuetify.breakpoint.xs ? '12' : getColumnSize(lottery.length)"
               v-for="(winner, i) in lottery"
               :key="winner.id"
             >
-              <v-card id="column" class="ma-3" elevation="0" style="min-width: 240px">
+              <v-card id="column" class="ma-3" elevation="0" style="min-width: 200px">
                 <v-card-title class="accent--text">
                   {{ i + 1 }}
                   <v-icon class="mr-4" color="accent">mdi-trophy-award</v-icon>

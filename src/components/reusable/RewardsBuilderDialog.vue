@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-form ref="form" v-model="valid" lazy-validation>
-      <v-row class="align-center" v-for="item in rewards" :key="item.id">
+    <v-form>
+      <v-row class="align-center" v-for="(item, index) in prizes" :key="item.id">
         <v-col cols="11" sm="5" md="5">
           <v-text-field
             :label="'Prize Number'"
@@ -14,8 +14,9 @@
           <v-text-field
             :label="'*Prize in %'"
             required
-            @input="$v.item.value.$touch()"
-            @blur="$v.item.value.$touch()"
+            @input="$v.prizes.$each[index].$touch()"
+            @blur="$v.prizes.$each[index].$touch()"
+            :error-messages="$v.prizes.$each[index].$invalid ? 'Prize is required' : ''"
             v-model="item.value"
           ></v-text-field>
         </v-col>
@@ -41,15 +42,25 @@
     <small>*indicates required field</small>
     <v-spacer></v-spacer>
     <!-- <v-btn color="primary" dark @click="submit()"> Save </v-btn> -->
+    <CustomSnackBar
+      message="Max winners for lottery is 5"
+      ref="snackBarDialog"
+    />
   </v-container>
 </template>
 
 <script>
+import CustomSnackBar from "@/components/reusable/CustomSnackBar";
+import { validationMixin } from "vuelidate";
+
 import { required } from "vuelidate/lib/validators";
 
 export default {
+  mixins: [validationMixin],
   name: "RewardsBuilderDialog",
-  components: {},
+  components: {
+    CustomSnackBar,
+  },
   props: {
     rewards: {
       type: Array,
@@ -57,23 +68,35 @@ export default {
     },
   },
   validations: {
-    item: {
-      value: { required },
+    prizes: {
+      $each: {
+        value: { required },
+      },
     },
   },
   data() {
     return {
       valid: true,
       dialog: false,
+      prizes: this.rewards,
     };
   },
+  computed: {
+   
+  },
   methods: {
-    submit() {
+    isValid() {
       this.$v.$touch();
+      console.log(this.$v);
+      return !this.$v.$invalid;
     },
     addReward() {
-      const defaultReward = { id: this.rewards.length + 1, value: "" };
-      this.$emit("push-element", defaultReward);
+      if (this.rewards.length < 5) {
+        const defaultReward = { id: this.rewards.length + 1, value: "" };
+        this.$emit("push-element", defaultReward);
+      } else {
+        this.$refs.snackBarDialog.open();
+      }
     },
     deleteReward(id) {
       this.$emit("delete-element", id);
