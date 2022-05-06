@@ -6,7 +6,9 @@
         class="timer"
         :date="formatDateToTimer(lottery.deadlineTime)"
       />
-      <v-card-title>{{ '#' + ('000' + lottery.projectId).substr(-3) }}</v-card-title>
+      <v-card-title>{{
+        "#" + ("000" + lottery.projectId).substr(-3)
+      }}</v-card-title>
       <v-card-text>
         <v-row>
           <v-col>
@@ -34,40 +36,45 @@
 
           <v-col>
             <v-list>
-                <v-list-item
-                  dense
-                  inactive
-                  :ripple="false"
-                  v-for="(item, i) in lottery.lotteryRewards"
-                  :key="i"
-                >
-                  <v-list-item-icon>
-                    <v-icon class="mr-2" color="accent"
-                      >mdi-trophy-award</v-icon
-                    >
-                  </v-list-item-icon>
-                  <v-list-item-content>
-                    {{ printPrize(i + 1, item) }}
-                  </v-list-item-content>
-                </v-list-item>
+              <v-list-item
+                dense
+                inactive
+                :ripple="false"
+                v-for="(item, i) in lottery.lotteryRewards"
+                :key="i"
+              >
+                <v-list-item-icon>
+                  <v-icon class="mr-2" color="accent">mdi-trophy-award</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  {{ printPrize(i + 1, item) }}
+                </v-list-item-content>
+              </v-list-item>
             </v-list>
           </v-col>
         </v-row>
         <v-divider class="ma-2 pa-2"></v-divider>
         <v-row v-if="ticketsBought != 0">
           <v-col>
-            <v-progress-circular
-              :rotate="360"
-              :size="100"
-              :width="15"
-              :value="winProbability"
-              color="accent"
-              >{{ winProbability }} %</v-progress-circular
-            >
-            <span class="ml-4"
-              >{{ ticketsBought }} tickets bought with value of
-              {{ lottery.purchased }} eth {{ getPurchasedEthCurrentPrice() }}
-            </span>
+            <v-row class="text-center">
+              <v-col cols="3">
+                <v-progress-circular
+                  :rotate="360"
+                  :size="100"
+                  :width="15"
+                  :value="winProbability"
+                  color="accent"
+                  >{{ winProbability }} %</v-progress-circular
+                >
+              </v-col>
+              <v-col style="align-self: center">
+                <p class="ml-4">
+                  {{ ticketsBought }} tickets bought with value of
+                  {{ lottery.purchased }} eth
+                  {{ getPurchasedEthCurrentPrice() }}
+                </p>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
 
@@ -93,20 +100,6 @@
         </v-list>
 
         <!-- <p class="text-h6 text--primary">Admin: {{ lottery.projectStarter }}</p> -->
-        <p v-if="lottery.deadlineTime > new Date().getTime()">
-          Kupit viac sa oplati!
-          <v-tooltip right>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn icon v-bind="attrs" v-on="on">
-                <v-icon color="blue lighten-1"> mdi-information </v-icon>
-              </v-btn>
-            </template>
-            <span v-for="item in discount" :key="item.tickets">
-              {{ item.tickets }} tickets for {{ item.percent }} %<br>
-            </span>
-          </v-tooltip>
-        </p>
-
         <p
           class="title"
           v-if="
@@ -117,19 +110,36 @@
         </p>
 
         <v-row v-if="winners.length == 0">
-          <v-col md="2" cols="12">
+          <v-col cols="5">
+            <div v-if="lottery.deadlineTime > new Date().getTime()">
+              <!-- Kupit viac sa oplati! -->
+              More tickets less money
+              <v-tooltip right>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn icon v-bind="attrs" v-on="on">
+                    <v-icon color="blue lighten-1"> mdi-information </v-icon>
+                  </v-btn>
+                </template>
+                <span v-for="item in discount" :key="item.tickets">
+                  {{ item.tickets }} tickets for {{ item.percent }} %<br />
+                </span>
+              </v-tooltip>
+            </div>
+          </v-col>
+          <v-col md="3" cols="3">
             <v-text-field
               v-model="lottery.amount"
               v-if="lottery.deadlineTime > new Date().getTime()"
-              label="Tickets"
+              label="Quantity"
               type="number"
-              height="30"
+              height="24"
             ></v-text-field>
           </v-col>
-          <v-col md="4" cols="12">
+          <v-col md="4" cols="4" style="width: 100px">
             <v-btn
               v-if="lottery.deadlineTime > new Date().getTime()"
               depressed
+              block
               color="accent"
               :loading="callResult.loading"
               @click.prevent="buyTicket()"
@@ -146,18 +156,18 @@
         >
           <v-col>
             <v-btn
-              v-if="!callResult.drawLoading"
+              :loading="callResult.drawLoading"
               depressed
               color="accent"
               @click.prevent="drawWinner()"
               >DRAW</v-btn
             >
-            <img
+            <!-- <img
               v-else
               height="200px"
               width="300px"
               src="../../assets/drawing.gif"
-            />
+            /> -->
           </v-col>
         </v-row>
       </v-card-text>

@@ -87,8 +87,7 @@ contract('Lottery', (accounts) => {
     await lottery.kill({ from: accountOne });
   });
 
-  it('allows to buy one ticket correctly', async () => {
-    await createLottery()
+  it('allows to buy ticket correctly', async () => {
     const accountTwo = accounts[1];
 
     const ticketPrice = (await lottery.getTicketPrice.call()).valueOf();

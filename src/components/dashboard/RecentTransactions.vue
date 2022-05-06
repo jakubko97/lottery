@@ -99,7 +99,6 @@
 </template>
 
 <script>
-import createLottery from "../../../contracts/BuildLotteryInstance";
 import apiCalls from "../../services/index";
 
 export default {
@@ -176,8 +175,8 @@ export default {
     changeTimeFormat() {
       this.dateTimeFormat = !this.dateTimeFormat;
     },
-    decodeInputData(inputData) {
-      let decodedData = this.$abiDecoder.decodeMethod(inputData);
+    async decodeInputData(inputData) {
+      let decodedData = await this.$abiDecoder.decodeMethod(inputData);
       // decodedData = JSON.parse(decodedData)
       return decodedData;
     },
@@ -190,7 +189,7 @@ export default {
     truncateStart(str) {
       return str ? str.substr(0, 18) + "..." : ''
     },
-    getAllTransactions() {
+    async getAllTransactions() {
       this.transactions = [];
       this.loading = true;
       Array.from(this.projectAddresses, async (address) => {

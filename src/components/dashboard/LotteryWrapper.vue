@@ -5,7 +5,7 @@
         :ethereumData="ethereumData != null ? ethereumData[0] : null"
         :projectData="projectData"
       />
-      <RecentWinners class="ma-2" />
+      <RecentWinners />
       <RecentTransactions
         v-if="callResult.finished"
         :project-addresses="projectAddresses"
