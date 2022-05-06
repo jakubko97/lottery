@@ -274,7 +274,7 @@ contract Lottery {
     }
 
     function pickWinner() public payable isCreator {
-        // require(block.timestamp > deadline, "Lottery is still open");
+        require(block.timestamp > deadline, "Lottery is open");
         require(winnerHasNotBeenSet(), "Winner has already been selected");
         require(
             !pickWinnerIsInProgress(),
@@ -384,10 +384,10 @@ contract Lottery {
         view
         returns (uint256[] memory, address[] memory)
     {
-        // require(
-        //     block.timestamp > deadline,
-        //     "The winners have not been announced yet."
-        // );
+        require(
+            block.timestamp > deadline,
+            "The winners have not been announced yet."
+        );
 
         address[] memory addrs = new address[](winnerIds.length);
         uint256[] memory amounts = new uint256[](winnerIds.length);
