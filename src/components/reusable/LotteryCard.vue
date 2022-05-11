@@ -119,9 +119,7 @@ export default {
       this.$router.push({
         name: "LotteryDetail",
         params: {
-          address: this.lottery.contract._address,
-          obj: { ...lottery },
-          ethData: { ...this.ethereumData}
+          address: this.lottery.contract._address
         },
       });
     },

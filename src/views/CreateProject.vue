@@ -53,7 +53,6 @@
             <RewardsBuilderDialog
               ref="rewardsBuilder"
               @push-element="addReward"
-              @delete-element="deleteReward"
               :rewards="newProject.rewards"
             />
           </v-card>

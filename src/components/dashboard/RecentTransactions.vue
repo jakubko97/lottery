@@ -199,7 +199,7 @@ export default {
             if(res.data != null){
             this.transactions = this.transactions.concat(res.data.result);
             Array.from(this.transactions, async (item) => {
-              item.age = await new Date(item.timeStamp * 1000);
+              item.age = new Date(item.timeStamp * 1000);
               item.dateTime = await this.getDateFormat(item.timeStamp);
               const decodedData = await this.decodeInputData(item.input);
               item.method = await decodedData.name;

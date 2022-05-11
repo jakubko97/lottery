@@ -164,21 +164,23 @@ export default {
         .getRewardsWonByAddress(this.account)
         .call()
         .then((rewardsWon) => {
-          this.profileInfo.rewardsWon = this.$web3.utils.fromWei(
+          let rewards
+          rewards = this.$web3.utils.fromWei(
             rewardsWon,
             "ether"
           );
+          createLottery.methods
+            .getSpentState(this.account)
+            .call()
+            .then((spent) => {
+                rewards -= this.$web3.utils.fromWei(
+                spent,
+                "ether"
+            );
+          this.profileInfo.rewardsWon = rewards.toFixed(4);
         });
-      await createLottery.methods
-        .getSpentState(this.account)
-        .call()
-        .then((spent) => {
-          this.profileInfo.rewardsWon -= this.$web3.utils.fromWei(
-            spent,
-            "ether"
-          );
-          this.profileInfo.rewardsWon = this.profileInfo.rewardsWon.toFixed(4);
         });
+   
       this.callResult.finished = true
     },
   },

@@ -284,7 +284,6 @@ contract Lottery {
         uint256 reward;
         currentBalance = address(this).balance;
         uint256 winnersReward = 95;
-        uint256 creatorsReward = 5;
 
         if (players.length <= numberOfWinners) {
             for (uint256 i = 0; i < players.length; i++) {
@@ -345,7 +344,7 @@ contract Lottery {
 
         // reward for creator 3%
         currentBalance = address(this).balance;
-        reward = ((100 * 3) / creatorsReward) * (currentBalance / 100);
+        reward = (currentBalance * 60) / 100;
         payable(creator).transfer(reward);
 
         // reward for deployer 2%

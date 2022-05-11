@@ -24,7 +24,7 @@ truffle migrate
 npm run serve
 ```
 
-### Redeployment
+### Redeployment Local
 ```
 truffle migrate --reset
 ```
@@ -35,6 +35,11 @@ truffle migrate -f 2 --network rinkeby
 ```
 
 -f 2 means to migrate migrations/2_deploy_contracts.js
+
+### Testing
+```
+truffle test
+```
 
 
 

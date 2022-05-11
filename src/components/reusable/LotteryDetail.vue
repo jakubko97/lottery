@@ -1,13 +1,13 @@
 <template>
   <div>
-    <v-card style="max-width: 600px; margin: 0 auto">
+    <v-card v-if="callResult.error == null" style="max-width: 600px; margin: 0 auto">
       <CountDownTimer
-        v-if="lottery.deadlineTime > new Date().getTime()"
+        v-if="lottery.details.deadlineTime > new Date().getTime()"
         class="timer"
-        :date="formatDateToTimer(lottery.deadlineTime)"
+        :date="formatDateToTimer(lottery.details.deadlineTime)"
       />
       <v-card-title>{{
-        "#" + ("000" + lottery.projectId).substr(-3)
+        "#" + ("000" + lottery.details.projectId).substr(-3)
       }}</v-card-title>
       <v-card-text>
         <v-row>
@@ -15,7 +15,7 @@
             <v-list>
               <div>
                 <v-icon class="mr-2" color="accent">mdi-cash</v-icon>
-                Price {{ lottery.ticketPrice }} ETH
+                Price {{ lottery.details.ticketPrice }} ETH
               </div>
               <div>
                 <v-icon class="mr-2" color="accent"
@@ -25,11 +25,11 @@
               </div>
               <div>
                 <v-icon class="mr-2" color="accent">mdi-bank</v-icon>
-                Bank {{ getCurrentAmount() }} ETH
+                Bank {{ lottery.details.currentAmount }} ETH
               </div>
               <div>
                 <v-icon class="mr-2" color="accent">mdi-timer-sand</v-icon>
-                {{ getDateFormat(lottery.deadlineTime) }}
+                {{ getDateFormat(lottery.details.deadlineTime) }}
               </div>
             </v-list>
           </v-col>
@@ -71,7 +71,7 @@
                 <p class="ml-4">
                   {{ ticketsBought }} tickets bought with value of
                   {{ lottery.purchased }} eth
-                  {{ getPurchasedEthCurrentPrice() }}
+                  {{ purchasedInEur }}
                 </p>
               </v-col>
             </v-row>
@@ -88,10 +88,10 @@
               <v-list-item-title>{{ wnr.address }}</v-list-item-title>
               <v-list-item-subtitle>
                 {{ fromWeiToEth(wnr.reward), }}
-                eth ({{
+                eth ({{ ethData ?
                   parseFloat(
                     ethData.current_price * fromWeiToEth(wnr.reward)
-                  ).toFixed(2)
+                  ).toFixed(2) : ''
                 }}
                 €)
               </v-list-item-subtitle>
@@ -111,7 +111,7 @@
 
         <v-row v-if="winners.length == 0">
           <v-col cols="5">
-            <div v-if="lottery.deadlineTime > new Date().getTime()">
+            <div v-if="lottery.details.deadlineTime > new Date().getTime()">
               <!-- Kupit viac sa oplati! -->
               More tickets less money
               <v-tooltip right>
@@ -129,7 +129,7 @@
           <v-col md="3" cols="3">
             <v-text-field
               v-model="lottery.amount"
-              v-if="lottery.deadlineTime > new Date().getTime()"
+              v-if="lottery.details.deadlineTime > new Date().getTime()"
               label="Quantity"
               type="number"
               height="24"
@@ -137,7 +137,7 @@
           </v-col>
           <v-col md="4" cols="4" style="width: 100px">
             <v-btn
-              v-if="lottery.deadlineTime > new Date().getTime()"
+              v-if="lottery.details.deadlineTime > new Date().getTime()"
               depressed
               block
               color="accent"
@@ -150,8 +150,8 @@
         <v-row
           v-if="
             winners.length == 0 &&
-            lottery.deadlineTime < new Date().getTime() &&
-            lottery.projectStarter == account
+            lottery.details.deadlineTime < new Date().getTime() &&
+            lottery.details.projectStarter == account
           "
         >
           <v-col>
@@ -173,8 +173,14 @@
       </v-card-text>
     </v-card>
     <RecentTransactions
+      v-if="callResult.error == null && lottery.contract"
       class="my-2"
       :project-addresses="[lottery.contract._address]"
+    />
+    <CustomSnackBar
+      v-if="callResult.error != null"
+      :message="callResult.error"
+      ref="snackBarDialog"
     />
   </div>
 </template>
@@ -182,22 +188,35 @@
 <script>
 import CountDownTimer from "./CountDownTimer.vue";
 import RecentTransactions from "@/components/dashboard/RecentTransactions.vue";
+import lottery from "../../../contracts/lotteryInstance";
+import CustomSnackBar from "./CustomSnackBar.vue";
 
 export default {
   name: "LotteryDetail",
   components: {
     CountDownTimer,
     RecentTransactions,
+    CustomSnackBar
   },
   data() {
     return {
       dialog: false,
       ethData: null,
-      lottery: { playersLength: 0, ticketsLength: 0 },
+      lottery: { 
+        details: {
+          playersLength: null, 
+          ticketsLength: null,
+          currentAmount: null,
+          ticketPrice: null,
+          projectId: null,
+          purchased: null
+          }
+      },
       account: null,
       winProbability: 0,
+      purchasedInEur: null,
       ticketsBought: 0,
-      callResult: { loading: false, drawLoading: false, error: "" },
+      callResult: { loading: false, drawLoading: false, error: null },
       winners: [],
       winner: {},
       rules: {
@@ -224,10 +243,23 @@ export default {
     // this code snippet takes the account (wallet) that is currently active
   },
   async created() {
-    this.lottery = this.$route.params.obj;
-    this.ethData = this.$route.params.ethData;
-    this.lottery.address = this.$route.params.address;
-    this.loadData();
+    // this.ethData = await this.$route.params.ethData;
+    let address =  await this.$route.params.address;
+    try {
+      this.lottery.contract = await lottery(address);
+    }
+    catch(e) {
+      this.callResult.error = e
+    }
+    if(this.lottery.contract != null){
+      await this.loadData();
+      await this.$xapi.get("https://api.coingecko.com/api/v3/coins/markets?vs_currency=eur&ids=ethereum")
+        .then((result) => {
+          this.ethData = result.data[0];
+          this.purchasedInEur = (parseFloat(this.ethData.current_price * this.lottery.details.purchased).toFixed(2) + "€");
+       });
+    }
+  
   },
   computed: {
     numberOfPlayers: function () {
@@ -269,6 +301,34 @@ export default {
           })
           .catch(() => {});
       });
+
+       await this.lottery.contract.methods
+              .getDetails(this.account)
+              .call()
+              .then((projectData) => {
+                this.lottery.details = projectData;
+                this.lottery.details.currentAmount = parseFloat(this.$web3.utils.fromWei(this.lottery.details.currentAmount.toString(), "ether")).toFixed(4);
+                this.lottery.details.ticketPrice = this.$web3.utils.fromWei(this.lottery.details.ticketPrice,"ether");
+                this.lottery.details.deadlineTime =
+                  this.lottery.details.deadlineTime.toString() + "000";
+                this.lottery.details.lotteryDateCreated =
+                  this.lottery.details.lotteryDateCreated.toString() + "000";
+
+              })
+              .catch((e) => {
+                console.log(e);
+              })
+              .finally(() => {
+              });
+
+            this.lottery.contract.methods
+              .getPlayersDetails()
+              .call()
+              .then((projectData) => {
+                this.lottery.details.players = projectData.lotteryPlayers;
+                this.lottery.details.tickets = projectData.lotteryTickets;
+              })
+              .catch((e) => {});
       await this.lottery.contract.methods
         .revealWinners()
         .call()
@@ -284,22 +344,9 @@ export default {
           }
         })
         .catch(() => {});
-      this.lottery.purchased = parseFloat(
-        this.$web3.utils.fromWei(this.lottery.purchased, "ether")
+      this.lottery.details.purchased = parseFloat(
+        this.$web3.utils.fromWei(this.lottery.details.purchased.toString(), "ether")
       ).toFixed(4);
-    },
-    getPurchasedEthCurrentPrice() {
-      return (
-        parseFloat(this.ethData.current_price * this.lottery.purchased).toFixed(
-          2
-        ) + "€"
-      );
-    },
-    getCurrentAmount() {
-      let amount = parseFloat(
-        this.$web3.utils.fromWei(this.lottery.currentAmount, "ether")
-      );
-      return amount.toFixed(4);
     },
     showPayAmount() {
       return this.lottery.amount != null && this.lottery.amount > 0
@@ -330,7 +377,7 @@ export default {
     },
     calculateDiscountForTickets() {
       const ticketAmount = this.lottery.amount;
-      let overralPrice = ticketAmount * this.lottery.ticketPrice;
+      let overralPrice = ticketAmount * this.lottery.details.ticketPrice;
       let ticketPrice = this.$web3.utils.toWei(
         overralPrice.toString(),
         "ether"
