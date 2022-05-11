@@ -1,5 +1,12 @@
 # Smart Contract Lottery
 
+We have designed a smart contract for the lottery portal, where users can create
+individual lotteries and others can participate by purchasing "tickets". Upon completion, the
+creator has the right to start a draw, where there can be several winners. We used the
+Rinkeby Ethereum test network through the Metamask cryptographic wallet. We tested the
+individual functions, where we subsequently came to the correct functionality of our
+application.
+
 - Developed in Solidity with version ^0.7.0
 
 ## Requirements for Development with local testnet
