@@ -21,7 +21,7 @@
                 <v-icon class="mr-2" color="accent"
                   >mdi-account-multiple</v-icon
                 >
-                {{ numberOfPlayers }} participated
+                {{ lottery.details.players ? lottery.details.players.length : '' }} participated
               </div>
               <div>
                 <v-icon class="mr-2" color="accent">mdi-bank</v-icon>
@@ -209,7 +209,9 @@ export default {
           currentAmount: null,
           ticketPrice: null,
           projectId: null,
-          purchased: null
+          purchased: null,
+          players: [],
+          tickets: []
           }
       },
       account: null,
@@ -263,10 +265,10 @@ export default {
   },
   computed: {
     numberOfPlayers: function () {
-      return this.lottery.players != null ? this.lottery.players.length : 0;
+      return this.lottery.details.players != null ? this.lottery.details.players.length : 0;
     },
     numberOfTickets: function () {
-      return this.lottery.tickets != null ? this.lottery.tickets.length : 0;
+      return this.lottery.details.tickets != null ? this.lottery.details.tickets.length : 0;
     },
     // winProbability: function () {
     //   if (this.lottery.purchased ? this.lottery.purchased != 0 : false) {

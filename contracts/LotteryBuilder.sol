@@ -38,11 +38,11 @@ contract LotteryBuilder {
         uint256[] calldata rewards,
         uint256 limitTickets
     ) external {
-        // uint256 totalPercent = 0;
-        // for (uint256 i = 0; i < rewards.length; i++) {
-        //     totalPercent += rewards[i];
-        // }
-        // require(totalPercent == 100, "The sum of prizes is not 100 (percent)");
+        uint256 totalPercent = 0;
+        for (uint256 i = 0; i < rewards.length; i++) {
+            totalPercent += rewards[i];
+        }
+        require(totalPercent == 100, "The sum of prizes is not 100 (percent)");
         uint256 raiseUntil = deadlineDate;
         uint256 id = lotteries.length;
         Lottery newProject = new Lottery(
