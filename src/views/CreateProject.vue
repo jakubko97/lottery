@@ -53,6 +53,7 @@
             <RewardsBuilderDialog
               ref="rewardsBuilder"
               @push-element="addReward"
+              @delete-element="deleteReward"
               :rewards="newProject.rewards"
             />
           </v-card>
@@ -174,6 +175,7 @@ export default {
         ).getTime();
         this.newProject.deadline = this.newProject.deadline / 1000;
         this.newProject.isLoading = true;
+        console.log(this.retrieveRewards())
         await createLottery.methods
           .startProject(
             (this.newProject.owner = this.account),

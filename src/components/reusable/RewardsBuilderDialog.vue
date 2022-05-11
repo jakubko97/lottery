@@ -22,7 +22,7 @@
         </v-col>
         <v-col cols="1" sm="1" md="1">
           <v-icon
-            v-if="item.id == prizes.length && item.id != 1"
+            v-if="item.id == rewards.length && item.id != 1"
             color="red"
             @click="deleteReward(item.id)"
             >mdi-delete</v-icon
@@ -85,22 +85,24 @@ export default {
    
   },
   methods: {
-    deleteReward(id) {
-      this.prizes = this.prizes.filter(
-        (item) => item.id !== id
-      );
-    },
     isValid() {
       this.$v.$touch();
       return !this.$v.$invalid;
     },
     addReward() {
-      if (this.prizes.length < 5) {
-        const defaultReward = { id: this.prizes.length + 1, value: "" };
-        this.prizes.push(defaultReward);
+      if (this.rewards.length < 5) {
+        const defaultReward = { id: this.rewards.length + 1, value: "" };
+        this.prizes.push(defaultReward)
+        this.$emit("push-element", defaultReward);
       } else {
         this.$refs.snackBarDialog.open();
       }
+    },
+    deleteReward(id) {
+      this.prizes = this.prizes.filter(
+        (item) => item.id !== id
+      );
+      this.$emit("delete-element", id);
     },
   },
 };
