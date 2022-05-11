@@ -1,4 +1,4 @@
-# Smart Contract Lottery
+# Smart Contract for lottery portal
 
 We have designed a smart contract for the lottery portal, where users can create
 individual lotteries and others can participate by purchasing "tickets". Upon completion, the
