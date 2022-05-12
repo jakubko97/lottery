@@ -3,7 +3,7 @@
     <v-form>
       <v-row
         class="align-center"
-        v-for="(item, index) in prizes"
+        v-for="(item, index) in rewards"
         :key="item.id"
       >
         <v-col cols="3" sm="5" md="5">
@@ -18,10 +18,10 @@
           <v-text-field
             :label="'*Prize in %'"
             required
-            @input="$v.prizes.$each[index].$touch()"
-            @blur="$v.prizes.$each[index].$touch()"
+            @input="$v.rewards.$each[index].$touch()"
+            @blur="$v.rewards.$each[index].$touch()"
             :error-messages="
-              $v.prizes.$each[index].$invalid ? 'Prize is required' : ''
+              $v.rewards.$each[index].$invalid ? 'Prize is required' : ''
             "
             v-model="item.value"
           ></v-text-field>
@@ -83,7 +83,7 @@ export default {
     },
   },
   validations: {
-    prizes: {
+    rewards: {
       $each: {
         value: { required },
       },
@@ -92,8 +92,7 @@ export default {
   data() {
     return {
       valid: true,
-      dialog: false,
-      prizes: this.rewards,
+      dialog: false
     };
   },
   computed: {},
@@ -105,14 +104,12 @@ export default {
     addReward() {
       if (this.rewards.length < 5) {
         const defaultReward = { id: this.rewards.length + 1, value: "" };
-        this.prizes.push(defaultReward);
         this.$emit("push-element", defaultReward);
       } else {
         this.$refs.snackBarDialog.open();
       }
     },
     deleteReward(id) {
-      this.prizes = this.prizes.filter((item) => item.id !== id);
       this.$emit("delete-element", id);
     },
   },
