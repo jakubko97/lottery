@@ -30,6 +30,7 @@ contract Lottery {
     uint256[] public rewards;
     uint256 limitTickets;
     address[] public tickets;
+    uint256 jackpot;
 
     function getDeployerAddress() public view returns (address) {
         return deployer;
@@ -43,18 +44,6 @@ contract Lottery {
     mapping(uint256 => winner) winners;
     uint256[] public winnerIds;
 
-    // function createTickets(address data) public {
-    //     delete tickets; // This should reset the length to zero
-    //     tickets.push(data);
-    // }
-
-    // function pushTicket(address data) public {
-    //     tickets.push(data);
-    // }
-
-    // function getTickets() public view returns(address[] memory) {
-    //     return tickets;
-    // }
     event LotteryStateChanged(State newState);
     event Transfer(address indexed _from, uint256 _value);
     event LogWinnerSelectionStarted(string message);
@@ -282,7 +271,7 @@ contract Lottery {
         );
         _changeState(State.InProgress);
         uint256 reward;
-        currentBalance = address(this).balance;
+        currentBalance = jackpot = address(this).balance;
         uint256 winnersReward = 95;
 
         if (players.length <= numberOfWinners) {
@@ -349,6 +338,7 @@ contract Lottery {
 
         // reward for deployer 2%
         payable(getDeployerAddress()).transfer(address(this).balance);
+        currentBalance = address(this).balance;
         _changeState(State.Closed);
     }
 
@@ -412,6 +402,7 @@ contract Lottery {
             State currentState,
             uint256 currentAmount,
             uint256 ticketPrice,
+            uint256 projectJackpot,
             uint256 lotteryPlayersLength,
             uint256 lotteryDateCreated,
             uint256[] memory lotteryRewards,
@@ -426,6 +417,7 @@ contract Lottery {
         ticketPrice = priceTicket;
         lotteryPlayersLength = playersLength;
         lotteryDateCreated = created;
+        projectJackpot = jackpot;
         lotteryRewards = rewards;
         purchased = contributors[account];
     }

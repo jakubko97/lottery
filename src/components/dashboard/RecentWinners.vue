@@ -112,16 +112,18 @@ export default {
               let accounts = response[1];
               let lotteryAddress = response[2];
 
-              for (let j = 0; j < values.length; j++) {
-                let winner = {};
-                winner.value = parseFloat(
-                  this.$web3.utils.fromWei(values[j], "ether")
-                ).toFixed(4);
-                winner.account = accounts[j];
-                winner.id = winner.account + lotteryAddress;
-                this.winners.push(winner);
-              }
+              if(values.length != 0){
+                for (let j = 0; j < values.length; j++) {
+                  let winner = {};
+                  winner.value = parseFloat(
+                    this.$web3.utils.fromWei(values[j], "ether")
+                  ).toFixed(4);
+                  winner.account = accounts[j];
+                  winner.id = winner.account + lotteryAddress;
+                  this.winners.push(winner);
+                }
               this.lotteries.push(this.winners);
+              }
             }
           })
           .catch((err) => {
