@@ -87,6 +87,7 @@ export default {
                 projectInfo = projectData;
                 projectInfo.isLoading = false;
                 projectInfo.contract = projectInst;
+                projectInfo.projectJackpot = parseFloat(this.$web3.utils.fromWei(projectInfo.projectJackpot.toString(), "ether")).toFixed(4);
                 projectInfo.ticketPrice = this.$web3.utils.fromWei(
                   projectInfo.ticketPrice,
                   "ether"

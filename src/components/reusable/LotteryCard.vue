@@ -12,7 +12,7 @@
     <v-card-text>
       <v-row class="text-center">
         <v-col>
-          <span class="title white--text">Jackpot <br /></span
+          <span class="title white--text">Pot <br /></span
           ><span class="headline white--text">
             {{ calculateEthAmount() }} {{  this.ethereumData != null ? this.ethereumData.symbol : ''}}</span
           ><br>
@@ -28,7 +28,7 @@
 
       <v-row class="text-center">
         <v-col class="white--text">
-          <div>
+          <div v-if="!archive">
             {{ days | two_digits }} days {{ hours | two_digits }}:{{
               minutes | two_digits
             }}:{{ seconds | two_digits }}
@@ -96,10 +96,10 @@ export default {
   },
   methods: {
     calculateEthAmount() {
-      return parseFloat(this.$web3.utils.fromWei(this.lottery.currentAmount, "ether")).toFixed(3)
+      return parseFloat(this.$web3.utils.fromWei(this.lottery.projectJackpot, "ether")).toFixed(3)
     },
     calculateEthPrice(){
-      const ethPrice = this.ethereumData != null ? (parseFloat(this.ethereumData.current_price) * this.$web3.utils.fromWei(this.lottery.currentAmount, "ether")) : 0
+      const ethPrice = this.ethereumData != null ? (parseFloat(this.ethereumData.current_price) * this.$web3.utils.fromWei(this.lottery.projectJackpot, "ether")) : 0
       return ethPrice.toFixed(2) + '€'
     },
     formatDateToTimer(uintDate) {

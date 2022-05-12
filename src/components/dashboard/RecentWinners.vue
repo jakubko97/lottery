@@ -1,5 +1,5 @@
 <template>
-  <v-carousel cycle height="160" hide-delimiter-background show-arrows-on-hover>
+  <v-carousel v-if="lotteries.length != 0" cycle height="160" hide-delimiter-background show-arrows-on-hover>
     <v-carousel-item v-for="(lottery, i) in lotteries" :key="i">
       <v-sheet elevation="4" rounded color="secondary" height="100%">
         <v-fade-transition>

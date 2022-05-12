@@ -25,7 +25,7 @@
               </div>
               <div>
                 <v-icon class="mr-2" color="accent">mdi-bank</v-icon>
-                Bank {{ lottery.details.currentAmount }} ETH
+                Pot {{ lottery.details.projectJackpot }} ETH
               </div>
               <div>
                 <v-icon class="mr-2" color="accent">mdi-timer-sand</v-icon>
@@ -310,6 +310,7 @@ export default {
               .then((projectData) => {
                 this.lottery.details = projectData;
                 this.lottery.details.currentAmount = parseFloat(this.$web3.utils.fromWei(this.lottery.details.currentAmount.toString(), "ether")).toFixed(4);
+                this.lottery.details.projectJackpot = parseFloat(this.$web3.utils.fromWei(this.lottery.details.projectJackpot.toString(), "ether")).toFixed(4);
                 this.lottery.details.ticketPrice = this.$web3.utils.fromWei(this.lottery.details.ticketPrice,"ether");
                 this.lottery.details.deadlineTime =
                   this.lottery.details.deadlineTime.toString() + "000";

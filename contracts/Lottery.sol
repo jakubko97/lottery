@@ -30,7 +30,7 @@ contract Lottery {
     uint256[] public rewards;
     uint256 limitTickets;
     address[] public tickets;
-    uint256 jackpot;
+    uint256 lotteryPot;
 
     function getDeployerAddress() public view returns (address) {
         return deployer;
@@ -187,7 +187,7 @@ contract Lottery {
         }
 
         emit Transfer(msg.sender, msg.value);
-
+        lotteryPot = (address(this).balance * 95) / 100;
         return tickets.length;
     }
 
@@ -271,8 +271,9 @@ contract Lottery {
         );
         _changeState(State.InProgress);
         uint256 reward;
-        currentBalance = jackpot = address(this).balance;
+        currentBalance = address(this).balance;
         uint256 winnersReward = 95;
+        lotteryPot = (address(this).balance * winnersReward) / 100;
 
         if (players.length <= numberOfWinners) {
             for (uint256 i = 0; i < players.length; i++) {
@@ -402,7 +403,7 @@ contract Lottery {
             State currentState,
             uint256 currentAmount,
             uint256 ticketPrice,
-            uint256 projectJackpot,
+            uint256 projectPot,
             uint256 lotteryPlayersLength,
             uint256 lotteryDateCreated,
             uint256[] memory lotteryRewards,
@@ -417,14 +418,11 @@ contract Lottery {
         ticketPrice = priceTicket;
         lotteryPlayersLength = playersLength;
         lotteryDateCreated = created;
-        projectJackpot = jackpot;
+        projectPot = lotteryPot;
         lotteryRewards = rewards;
         purchased = contributors[account];
     }
 
-    // function purchasedByAddress(address _key) public view returns (uint256) {
-    //     return contributors[_key];
-    // }
     function _changeState(State _newState) private {
         state = _newState;
         emit LotteryStateChanged(state);
