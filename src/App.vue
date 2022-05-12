@@ -3,6 +3,7 @@
     <app-app-bar v-if="!isMobile" />
     <app-app-page :account="account"></app-app-page>
     <app-app-bottom-bar v-if="isMobile" />
+    <app-app-footer></app-app-footer>
   </v-app>
 </template>
 
