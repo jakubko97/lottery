@@ -30,7 +30,7 @@ contract Lottery {
     uint256[] public rewards;
     uint256 limitTickets;
     address[] public tickets;
-    uint256 lotteryPot;
+    uint256 lotteryPot = 0;
 
     function getDeployerAddress() public view returns (address) {
         return deployer;

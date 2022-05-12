@@ -25,7 +25,7 @@
               </div>
               <div>
                 <v-icon class="mr-2" color="accent">mdi-bank</v-icon>
-                Pot {{ lottery.details.projectJackpot }} ETH
+                Pot {{ lottery.details.projectPot }} ETH
               </div>
               <div>
                 <v-icon class="mr-2" color="accent">mdi-timer-sand</v-icon>
@@ -255,11 +255,6 @@ export default {
     }
     if(this.lottery.contract != null){
       await this.loadData();
-      await this.$xapi.get("https://api.coingecko.com/api/v3/coins/markets?vs_currency=eur&ids=ethereum")
-        .then((result) => {
-          this.ethData = result.data[0];
-          this.purchasedInEur = (parseFloat(this.ethData.current_price * this.lottery.details.purchased).toFixed(2) + "€");
-       });
     }
   
   },
@@ -302,7 +297,14 @@ export default {
             this.ticketsBought = result;
           })
           .catch(() => {});
+
+      
       });
+      await this.$xapi.get("https://api.coingecko.com/api/v3/coins/markets?vs_currency=eur&ids=ethereum")
+        .then((result) => {
+          this.ethData = result.data[0];
+          this.purchasedInEur = (parseFloat(this.ethData.current_price * this.lottery.details.purchased).toFixed(2) + "€");
+       });
 
        await this.lottery.contract.methods
               .getDetails(this.account)
@@ -310,7 +312,7 @@ export default {
               .then((projectData) => {
                 this.lottery.details = projectData;
                 this.lottery.details.currentAmount = parseFloat(this.$web3.utils.fromWei(this.lottery.details.currentAmount.toString(), "ether")).toFixed(4);
-                this.lottery.details.projectJackpot = parseFloat(this.$web3.utils.fromWei(this.lottery.details.projectJackpot.toString(), "ether")).toFixed(4);
+                this.lottery.details.projectPot = parseFloat(this.$web3.utils.fromWei(this.lottery.details.projectPot.toString(), "ether")).toFixed(4);
                 this.lottery.details.ticketPrice = this.$web3.utils.fromWei(this.lottery.details.ticketPrice,"ether");
                 this.lottery.details.deadlineTime =
                   this.lottery.details.deadlineTime.toString() + "000";

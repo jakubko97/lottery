@@ -96,10 +96,10 @@ export default {
   },
   methods: {
     calculateEthAmount() {
-      return parseFloat(this.$web3.utils.fromWei(this.lottery.projectJackpot, "ether")).toFixed(3)
+      return parseFloat(this.$web3.utils.fromWei(this.lottery.projectPot, "ether")).toFixed(3)
     },
     calculateEthPrice(){
-      const ethPrice = this.ethereumData != null ? (parseFloat(this.ethereumData.current_price) * this.$web3.utils.fromWei(this.lottery.projectJackpot, "ether")) : 0
+      const ethPrice = this.ethereumData != null ? (parseFloat(this.ethereumData.current_price) * this.$web3.utils.fromWei(this.lottery.projectPot, "ether")) : 0
       return ethPrice.toFixed(2) + '€'
     },
     formatDateToTimer(uintDate) {
