@@ -73,7 +73,7 @@
           <v-card width="650" elevation="0" class="mb-12" height="375px">
             <v-card-text class="pt-0">
               <v-row>
-                <v-col class="" md="12">
+                <v-col v-if="!$vuetify.breakpoint.xs" class="" md="12">
                   <v-date-picker
                     class="mr-5"
                     :min="nowDate"
@@ -84,6 +84,77 @@
                     v-model="time"
                     format="24hr"
                   ></v-time-picker>
+                </v-col>
+                <v-col v-if="$vuetify.breakpoint.xs" cols="12" sm="5" md="4">
+                  <v-dialog
+                    ref="dialogDate"
+                    v-model="menu1"
+                    :return-value.sync="date"
+                    persistent
+                    width="290px"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="date"
+                        label="Date picker"
+                        prepend-icon="mdi-calendar"
+                        readonly
+                        v-bind="attrs"
+                        v-on="on"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker v-model="date">
+                      <v-spacer></v-spacer>
+                      <v-btn text color="primary" @click="menu1 = false">
+                        Cancel
+                      </v-btn>
+                      <v-btn
+                        text
+                        color="primary"
+                        @click="$refs.dialogDate.save(date)"
+                      >
+                        OK
+                      </v-btn>
+                    </v-date-picker>
+                  </v-dialog>
+                </v-col>
+                <v-col v-if="$vuetify.breakpoint.xs" cols="11" sm="5">
+                  <v-dialog
+                    ref="dialogTime"
+                    v-model="menu2"
+                    :return-value.sync="time"
+                    persistent
+                    width="290px"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="time"
+                        label="Time picker"
+                        prepend-icon="mdi-clock-time-four-outline"
+                        readonly
+                        v-bind="attrs"
+                        v-on="on"
+                      ></v-text-field>
+                    </template>
+                    <v-time-picker
+                      v-if="menu2"
+                      v-model="time"
+                      full-width
+                      format="24hr"
+                    >
+                      <v-spacer></v-spacer>
+                      <v-btn text color="primary" @click="menu2 = false">
+                        Cancel
+                      </v-btn>
+                      <v-btn
+                        text
+                        color="primary"
+                        @click="$refs.dialogTime.save(time)"
+                      >
+                        OK
+                      </v-btn>
+                    </v-time-picker>
+                  </v-dialog>
                 </v-col>
               </v-row>
             </v-card-text>
@@ -128,6 +199,9 @@ export default {
       date: null,
       time: null,
       e1: 1,
+      time2: null,
+      menu1: false,
+      menu2: false,
       account: null,
       modelSnackBar: false,
       newProject: {
@@ -175,7 +249,7 @@ export default {
         ).getTime();
         this.newProject.deadline = this.newProject.deadline / 1000;
         this.newProject.isLoading = true;
-        console.log(this.retrieveRewards())
+        console.log(this.retrieveRewards());
         await createLottery.methods
           .startProject(
             (this.newProject.owner = this.account),
