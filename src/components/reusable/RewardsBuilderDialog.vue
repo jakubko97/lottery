@@ -1,29 +1,35 @@
 <template>
   <v-container>
     <v-form>
-      <v-row class="align-center" v-for="(item, index) in prizes" :key="item.id">
-        <v-col cols="11" sm="5" md="5">
+      <v-row
+        class="align-center"
+        v-for="(item, index) in prizes"
+        :key="item.id"
+      >
+        <v-col cols="3" sm="5" md="5">
           <v-text-field
-            :label="'Prize Number'"
+            :label="'Prize order'"
             required
             v-model="item.id"
             disabled
           ></v-text-field>
         </v-col>
-        <v-col cols="11" sm="5" md="5">
+        <v-col cols="8" sm="5" md="5">
           <v-text-field
             :label="'*Prize in %'"
             required
             @input="$v.prizes.$each[index].$touch()"
             @blur="$v.prizes.$each[index].$touch()"
-            :error-messages="$v.prizes.$each[index].$invalid ? 'Prize is required' : ''"
+            :error-messages="
+              $v.prizes.$each[index].$invalid ? 'Prize is required' : ''
+            "
             v-model="item.value"
           ></v-text-field>
         </v-col>
         <v-col cols="1" sm="1" md="1">
           <v-icon
             v-if="item.id == rewards.length && item.id != 1"
-            color="red"
+            color="accent"
             @click="deleteReward(item.id)"
             >mdi-delete</v-icon
           >
@@ -40,6 +46,15 @@
       </v-col>
     </v-row>
     <small>*indicates required field</small>
+    <v-tooltip right>
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn icon v-bind="attrs" v-on="on">
+          <v-icon color="blue lighten-1"> mdi-information </v-icon>
+        </v-btn>
+      </template>
+      <small>maximum number of winners 5</small><br />
+      <small>sum of prizes must be 100%</small><br />
+    </v-tooltip><br>
     <v-spacer></v-spacer>
     <!-- <v-btn color="primary" dark @click="submit()"> Save </v-btn> -->
     <CustomSnackBar
@@ -81,9 +96,7 @@ export default {
       prizes: this.rewards,
     };
   },
-  computed: {
-   
-  },
+  computed: {},
   methods: {
     isValid() {
       this.$v.$touch();
@@ -92,16 +105,14 @@ export default {
     addReward() {
       if (this.rewards.length < 5) {
         const defaultReward = { id: this.rewards.length + 1, value: "" };
-        this.prizes.push(defaultReward)
+        this.prizes.push(defaultReward);
         this.$emit("push-element", defaultReward);
       } else {
         this.$refs.snackBarDialog.open();
       }
     },
     deleteReward(id) {
-      this.prizes = this.prizes.filter(
-        (item) => item.id !== id
-      );
+      this.prizes = this.prizes.filter((item) => item.id !== id);
       this.$emit("delete-element", id);
     },
   },

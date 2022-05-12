@@ -89,12 +89,6 @@
         {{ dateTimeFormat ? item.dateTime : dateInMilliseconds(item.age) }}
       </template>
     </v-data-table>
-    <!-- <v-pagination
-      color="accent"
-      @input="updatePage"
-      v-model="page"
-      :length="pageCount"
-    ></v-pagination> -->
   </v-card>
 </template>
 
@@ -143,9 +137,6 @@ export default {
     }
   },
   methods: {
-    updatePage() {
-      this.getAllTransactions();
-    },
     dateInMilliseconds(age) {
       const milliseconds = Math.trunc(Date.parse(age) / 1000);
       const seconds = Math.abs((milliseconds - this.now) % 60);
@@ -177,7 +168,6 @@ export default {
     },
     async decodeInputData(inputData) {
       let decodedData = await this.$abiDecoder.decodeMethod(inputData);
-      // decodedData = JSON.parse(decodedData)
       return decodedData;
     },
     getDateFormat(uintDate) {
@@ -215,9 +205,6 @@ export default {
             this.loading = false;
           });
       });
-    },
-    createProject() {
-      this.$router.push("/CreateProject");
     },
   },
 };
