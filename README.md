@@ -9,6 +9,15 @@ application.
 
 - Developed in Solidity with version ^0.7.0
 
+## Technologies
+
+- VueJS for frontend development
+- Solidity for smart contracts
+- Truffle Suite development enviroment and testing framework for smart contracts
+- Ganache GUI local testing network
+- Metamask wallet 
+- Web3 interacting with Ethereum node locally or remotely
+
 ## Requirements for Development with local testnet
 - Install Ganache UI and Metamask extension in browser.
 - Import truffle-config.js file to Ganache new workspace.
