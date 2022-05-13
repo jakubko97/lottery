@@ -7,6 +7,7 @@ Rinkeby Ethereum test network through the Metamask cryptographic wallet. We test
 individual functions, where we subsequently came to the correct functionality of our
 application.
 
+- https://fascinating-gecko-f7f57a.netlify.app/
 - Developed in Solidity with version ^0.7.0
 
 ## Technologies
