@@ -53,7 +53,7 @@
         <v-tooltip top>
           <template v-slot:activator="{ on, attrs }">
             <a
-              :href="'https://rinkeby.etherscan.io/tx/' + item.hash"
+              :href="'https://sepolia.etherscan.io/tx/' + item.hash"
               target="_blank"
               v-bind="attrs"
               v-on="on"
@@ -174,10 +174,12 @@ export default {
       return this.$utils.formatDate(new Date(+uintDate * 1000));
     },
     truncateMiddle(str, n) {
-      return str ? str.substr(0, 18) + "..." + str.substr(str.length - 3, str.length) : ''
+      return str
+        ? str.substr(0, 18) + "..." + str.substr(str.length - 3, str.length)
+        : "";
     },
     truncateStart(str) {
-      return str ? str.substr(0, 18) + "..." : ''
+      return str ? str.substr(0, 18) + "..." : "";
     },
     async getAllTransactions() {
       this.transactions = [];
@@ -186,19 +188,18 @@ export default {
         await apiCalls
           .getTransactionsByAccount(address, this.page, this.offset)
           .then((res) => {
-            if(res.data != null){
-            this.transactions = this.transactions.concat(res.data.result);
-            Array.from(this.transactions, async (item) => {
-              item.age = new Date(item.timeStamp * 1000);
-              item.dateTime = await this.getDateFormat(item.timeStamp);
-              const decodedData = await this.decodeInputData(item.input);
-              item.method = await decodedData.name;
+            if (res.data != null) {
+              this.transactions = this.transactions.concat(res.data.result);
+              Array.from(this.transactions, async (item) => {
+                item.age = new Date(item.timeStamp * 1000);
+                item.dateTime = await this.getDateFormat(item.timeStamp);
+                const decodedData = await this.decodeInputData(item.input);
+                item.method = await decodedData.name;
                 if (decodedData.params.length != 0) {
-                item.tickets = await decodedData.params[0].value;
-              }
-            });
+                  item.tickets = await decodedData.params[0].value;
+                }
+              });
             }
-           
           })
           .catch((e) => {})
           .finally(() => {

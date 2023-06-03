@@ -2,11 +2,13 @@
   <v-app-bar elevate-on-scroll color="primary" app>
     <!-- <v-app-bar-nav-icon @click.stop="switchDrawer" /> -->
     <v-spacer></v-spacer>
-    <v-toolbar-title class="headline font-weight-bold primary--text">Smart Lottery Portal</v-toolbar-title>
+    <v-toolbar-title class="headline font-weight-bold primary--text"
+      >Smart Lottery Portal</v-toolbar-title
+    >
     <v-spacer></v-spacer>
     <img height="32" src="@/assets/ethereum.svg" />
-    <span class="ma-2 subtitle-2">Ethereum Rinkeby</span>
-    <ConnectWalletDialog :account="account ? account : ''"/>
+    <span class="ma-2 subtitle-2">Ethereum Sepolia</span>
+    <ConnectWalletDialog :account="account ? account : ''" />
     <template v-slot:extension>
       <v-tabs v-model="tab" centered dark>
         <v-tabs-slider></v-tabs-slider>
@@ -30,7 +32,7 @@ import ConnectWalletDialog from "@/components/reusable/ConnectWalletDialog";
 export default {
   name: "AppBar",
   components: {
-    ConnectWalletDialog
+    ConnectWalletDialog,
   },
   data() {
     return {
