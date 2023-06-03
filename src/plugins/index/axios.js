@@ -2,7 +2,7 @@ import Vue from 'vue'
 import axios from 'axios'
 
 const xapi = axios.create({
-  baseURL: 'https://api.sepolia.etherscan.io/api',
+  baseURL: 'https://api-sepolia.etherscan.io/api',
   headers: {
     Accept: 'application/json, text/plain, */*'
   },
