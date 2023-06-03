@@ -3,7 +3,7 @@
     <app-app-bar v-if="!isMobile" />
     <app-app-page :account="account"></app-app-page>
     <app-app-bottom-bar v-if="isMobile" />
-    <app-app-footer></app-app-footer>
+    <app-app-footer v-if="!isMobile"></app-app-footer>
   </v-app>
 </template>
 
@@ -35,16 +35,16 @@ export default {
     //     this.loadingAccounts = false;
     //   });
   },
-  beforeDestroy () {
-      if (typeof window === 'undefined') return
+  beforeDestroy() {
+    if (typeof window === "undefined") return;
 
-      window.removeEventListener('resize', this.onResize, { passive: true })
-    },
-  mounted () {
-      this.onResize()
+    window.removeEventListener("resize", this.onResize, { passive: true });
+  },
+  mounted() {
+    this.onResize();
 
-      window.addEventListener('resize', this.onResize, { passive: true })
-    },
+    window.addEventListener("resize", this.onResize, { passive: true });
+  },
   methods: {
     onResize() {
       this.isMobile = window.innerWidth < 600;

@@ -10,21 +10,22 @@ module.exports = {
   // for more details on how to specify configuration options!
   //
   networks: {
-    rinkeby: {
+    sepolia: {
       provider: function () {
-        return new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/v3/da3d173db8164055b25ad460fac26165');
+        return new HDWalletProvider(mnemonic, 'https://sepolia.infura.io/v3/da3d173db8164055b25ad460fac26165');
       },
-      network_id: 4
+      network_id: 11155111 //chain id, sepolia
     },
     development: {
       host: "127.0.0.1",
       port: 7545,
       network_id: "*"
-        },
+    },
     test: {
       host: "127.0.0.1",
       port: 7545,
-      network_id: "*"    }
+      network_id: "*"
+    }
   },
   compilers: {
     solc: {

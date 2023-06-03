@@ -1,9 +1,5 @@
 <template>
-  <v-bottom-navigation
-    :value="value"
-    app
-    color="primary"
-  >
+  <v-bottom-navigation :value="value" app color="primary">
     <v-btn :to="'/'">
       <span>Home</span>
 
@@ -21,10 +17,15 @@
 
       <v-icon>mdi-account-box</v-icon>
     </v-btn>
-      <v-btn :to="'/CreateProject'">
+    <v-btn :to="'/CreateProject'">
       <span>Create</span>
 
       <v-icon>mdi-plus</v-icon>
+    </v-btn>
+    <v-btn :to="'/Info'">
+      <span>Info</span>
+
+      <v-icon>mdi-information</v-icon>
     </v-btn>
   </v-bottom-navigation>
 </template>
@@ -34,16 +35,13 @@ export default {
   name: "AppBottomBar",
   data() {
     return {
-     value: 0
+      value: 0,
     };
   },
-  created() {
-  },
-  methods: {
-  },
+  created() {},
+  methods: {},
 };
 </script>
 
 <style>
-
 </style>

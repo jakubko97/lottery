@@ -103,7 +103,7 @@
                         v-on="on"
                       ></v-text-field>
                     </template>
-                    <v-date-picker v-model="date">
+                    <v-date-picker v-model="date" :min="nowDate">
                       <v-spacer></v-spacer>
                       <v-btn text color="primary" @click="menu1 = false">
                         Cancel
@@ -140,6 +140,7 @@
                       v-if="menu2"
                       v-model="time"
                       full-width
+                      :min="nowDate == date ? nowTime : ''"
                       format="24hr"
                     >
                       <v-spacer></v-spacer>
@@ -194,8 +195,8 @@ export default {
   },
   data() {
     return {
-      nowDate: new Date().toISOString().slice(0, 10),
-      nowTime: new Date().toISOString().substring(11, 16),
+      nowDate: this.toIsoString(new Date()).slice(0, 10),
+      nowTime: this.toIsoString(new Date()).substring(11, 16),
       date: null,
       time: null,
       e1: 1,
@@ -222,6 +223,31 @@ export default {
   },
   created() {},
   methods: {
+    toIsoString(date) {
+      var tzo = -date.getTimezoneOffset(),
+        dif = tzo >= 0 ? "+" : "-",
+        pad = function (num) {
+          return (num < 10 ? "0" : "") + num;
+        };
+
+      return (
+        date.getFullYear() +
+        "-" +
+        pad(date.getMonth() + 1) +
+        "-" +
+        pad(date.getDate()) +
+        "T" +
+        pad(date.getHours()) +
+        ":" +
+        pad(date.getMinutes()) +
+        ":" +
+        pad(date.getSeconds()) +
+        dif +
+        pad(Math.floor(Math.abs(tzo) / 60)) +
+        ":" +
+        pad(Math.abs(tzo) % 60)
+      );
+    },
     addReward(reward) {
       this.newProject.rewards.push(reward);
     },
